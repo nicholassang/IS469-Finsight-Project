@@ -1,0 +1,32 @@
+# FinSight — Grab Holdings RAG QA System
+# Pin versions for reproducibility
+
+# ── Core utilities ─────────────────────────────────────────────────────────────
+python-dotenv==1.0.1
+pyyaml==6.0.1
+pydantic==2.6.4
+tqdm==4.66.4
+
+# ── Data ingestion ─────────────────────────────────────────────────────────────
+pdfplumber==0.11.0
+PyMuPDF==1.24.3          # fitz fallback parser
+requests==2.32.3         # PDF downloader
+tiktoken==0.7.0          # token counting
+
+# ── Data processing ────────────────────────────────────────────────────────────
+pandas==2.2.2
+numpy==1.26.4
+
+# ── Retrieval ──────────────────────────────────────────────────────────────────
+chromadb==0.5.3
+sentence-transformers==3.0.1
+rank-bm25==0.2.2
+
+# ── Generation ─────────────────────────────────────────────────────────────────
+openai==1.35.7
+
+# ── Evaluation ─────────────────────────────────────────────────────────────────
+rouge-score==0.1.2
+
+# ── App ────────────────────────────────────────────────────────────────────────
+streamlit==1.37.0

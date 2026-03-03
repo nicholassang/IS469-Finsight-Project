@@ -1,0 +1,49 @@
+# Environment — never commit secrets
+.env
+
+# Python
+.venv/
+venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+
+# Data files — large, not committed (regeneratable)
+data/raw/*.pdf
+data/raw/*.PDF
+
+# Generated indexes — regeneratable via build_index.py
+indexes/chroma/*
+!indexes/chroma/.gitkeep
+indexes/bm25/*.pkl
+
+# Evaluation results — optional: commit for reproducibility, or exclude to save space
+# evaluation/results/*.json
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+ehthumbs.db
+
+# Logs
+*.log
+indexes/retrieval_logs/

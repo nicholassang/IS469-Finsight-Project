@@ -1,0 +1,35 @@
+# FinSight — Chunking Experiment Configurations
+# Switch active config in settings.yaml or pass --chunking-config flag
+
+default:
+  strategy: fixed_token
+  chunk_size: 512
+  chunk_overlap: 50
+  tokenizer: cl100k_base     # tiktoken encoding
+  min_chunk_tokens: 50       # discard chunks below this
+  respect_sentence_boundaries: true   # don't cut mid-sentence if possible
+
+experiment_A:
+  # Smaller chunks — better recall, worse generation coherence
+  strategy: fixed_token
+  chunk_size: 256
+  chunk_overlap: 30
+  tokenizer: cl100k_base
+  min_chunk_tokens: 30
+  respect_sentence_boundaries: true
+
+experiment_B:
+  # Larger chunks — more context per chunk, may dilute relevance signal
+  strategy: fixed_token
+  chunk_size: 768
+  chunk_overlap: 80
+  tokenizer: cl100k_base
+  min_chunk_tokens: 80
+  respect_sentence_boundaries: true
+
+experiment_C:
+  # Sentence-window — groups N consecutive sentences per chunk
+  strategy: sentence_window
+  window_size: 5             # sentences per chunk
+  overlap_sentences: 1       # sentences shared between consecutive chunks
+  min_chunk_tokens: 30

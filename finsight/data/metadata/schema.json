@@ -1,0 +1,14 @@
+{
+  "chunk_id": "str \u2014 unique identifier: {company}_{doctype}_{period}_p{page}_c{chunk}",
+  "company": "str \u2014 always 'Grab Holdings'",
+  "ticker": "str \u2014 'GRAB'",
+  "doc_type": "str \u2014 enum: 20-F, 6-K, earnings_pr, investor_deck, earnings_deck",
+  "source_file": "str \u2014 filename in data/raw/",
+  "source_url": "str \u2014 official URL",
+  "filing_date": "str \u2014 ISO 8601 YYYY-MM-DD",
+  "fiscal_period": "str \u2014 e.g. 'FY2023', 'Q2 2024'",
+  "page_number": "int \u2014 1-indexed",
+  "section_title": "str | null \u2014 best-effort heading detection",
+  "chunk_index": "int \u2014 position within document",
+  "token_count": "int \u2014 approximate token count"
+}

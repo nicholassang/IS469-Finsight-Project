@@ -1,0 +1,152 @@
+# FinSight — Main Configuration
+# All parameters read from here; nothing is hardcoded in src/
+
+project:
+  name: FinSight
+  company: Grab Holdings
+  ticker: GRAB
+  seed: 42
+
+paths:
+  raw_data: data/raw
+  processed_data: data/processed
+  metadata: data/metadata
+  chroma_db: indexes/chroma
+  bm25_index: indexes/bm25/bm25.pkl
+  bm25_corpus: indexes/bm25/corpus.pkl
+  retrieval_logs: indexes/retrieval_logs
+
+embeddings:
+  model: sentence-transformers/all-mpnet-base-v2
+  batch_size: 32
+  normalize: true
+
+retrieval:
+  dense_top_k: 20
+  sparse_top_k: 20
+  rerank_top_k: 5
+  final_context_k: 5
+  rrf_k: 60              # RRF constant — standard value, do not change without reason
+  weak_evidence_threshold: 0.3   # Streamlit warning threshold
+
+reranker:
+  model: cross-encoder/ms-marco-MiniLM-L-6-v2
+  max_length: 512
+
+generation:
+  # ── Backend selector ────────────────────────────────────────────────────────
+  # Set to "ollama" to use a free local model with no API key required.
+  # Set to "openai" to use the OpenAI API (requires OPENAI_API_KEY in .env).
+  backend: ollama            # "ollama" | "openai"
+
+  # ── OpenAI settings (only used when backend = "openai") ────────────────────
+  model: gpt-4o-mini         # gpt-4o-mini (cheap) | gpt-4o (best)
+  temperature: 0.0
+  max_tokens: 800
+
+  # ── Ollama settings (only used when backend = "ollama") ────────────────────
+  # Install Ollama: https://ollama.com/download
+  # Pull a model:  ollama pull llama3.2          (4GB, good quality)
+  #                ollama pull qwen2.5:7b         (4GB, very strong for finance)
+  #                ollama pull mistral            (4GB, fast)
+  #                ollama pull llama3.1:8b        (5GB, strong reasoning)
+  #                ollama pull phi3.5             (2GB, lightweight)
+  # Start server:  ollama serve                   (auto-starts on install on Mac/Windows)
+  ollama_model: llama3.2     # change to whichever model you pulled
+  ollama_base_url: http://localhost:11434
+
+chroma:
+  collection_name: grab_filings
+  distance_function: cosine
+
+# Document registry — updated to match actual files in data/raw/
+documents:
+  - id: grab_20f_fy2022
+    filename: grab_20f_fy2022.pdf
+    doc_type: "20-F"
+    fiscal_period: "FY2022"
+    filing_date: "2023-04-06"
+    source_url: "https://ir.grab.com/sec-filings/annual-reports"
+    company: "Grab Holdings"
+    ticker: "GRAB"
+
+  - id: grab_20f_fy2023
+    filename: grab_20f_fy2023.pdf
+    doc_type: "20-F"
+    fiscal_period: "FY2023"
+    filing_date: "2024-03-15"
+    source_url: "https://ir.grab.com/sec-filings/annual-reports"
+    company: "Grab Holdings"
+    ticker: "GRAB"
+
+  - id: grab_20f_fy2024
+    filename: grab_20f_fy2024.pdf
+    doc_type: "20-F"
+    fiscal_period: "FY2024"
+    filing_date: "2025-03-15"
+    source_url: "https://ir.grab.com/sec-filings/annual-reports"
+    company: "Grab Holdings"
+    ticker: "GRAB"
+
+  - id: grab_6k_q1_2025
+    filename: grab_6k_q1_2025.pdf
+    doc_type: "6-K"
+    fiscal_period: "Q1 2025"
+    filing_date: "2025-05-22"
+    source_url: "https://ir.grab.com/sec-filings/all-sec-filings"
+    company: "Grab Holdings"
+    ticker: "GRAB"
+
+  - id: grab_6k_q2_2025
+    filename: grab_6k_q2_2025.pdf
+    doc_type: "6-K"
+    fiscal_period: "Q2 2025"
+    filing_date: "2025-08-21"
+    source_url: "https://ir.grab.com/sec-filings/all-sec-filings"
+    company: "Grab Holdings"
+    ticker: "GRAB"
+
+  - id: grab_6k_q3_2025
+    filename: grab_6k_q3_2025.pdf
+    doc_type: "6-K"
+    fiscal_period: "Q3 2025"
+    filing_date: "2025-11-13"
+    source_url: "https://ir.grab.com/sec-filings/all-sec-filings"
+    company: "Grab Holdings"
+    ticker: "GRAB"
+
+  - id: grab_6k_q4_2025
+    filename: grab_6k_q4_2025.pdf
+    doc_type: "6-K"
+    fiscal_period: "Q4 2025"
+    filing_date: "2026-02-26"
+    source_url: "https://ir.grab.com/sec-filings/all-sec-filings"
+    company: "Grab Holdings"
+    ticker: "GRAB"
+
+  - id: grab_earnings_deck_q2_2025
+    filename: grab_earnings_deck_q2_2025.pdf
+    doc_type: "earnings_deck"
+    fiscal_period: "Q2 2025"
+    filing_date: "2025-08-21"
+    source_url: "https://ir.grab.com/events-and-presentations"
+    company: "Grab Holdings"
+    ticker: "GRAB"
+
+  - id: grab_earnings_deck_q3_2025
+    filename: grab_earnings_deck_q3_2025.pdf
+    doc_type: "earnings_deck"
+    fiscal_period: "Q3 2025"
+    filing_date: "2025-11-13"
+    source_url: "https://ir.grab.com/events-and-presentations"
+    company: "Grab Holdings"
+    ticker: "GRAB"
+
+  - id: grab_earnings_deck_q4_2025
+    filename: grab_earnings_deck_q4_2025.pdf
+    doc_type: "earnings_deck"
+    fiscal_period: "Q4 2025"
+    filing_date: "2026-02-26"
+    source_url: "https://ir.grab.com/events-and-presentations"
+    company: "Grab Holdings"
+    ticker: "GRAB"
