@@ -15,15 +15,6 @@ from pathlib import Path
 # Suppress the harmless PyTorch/Streamlit path introspection warning
 warnings.filterwarnings("ignore", message=".*torch.classes.*")
 
-import logging
-logging.getLogger("torch").setLevel(logging.ERROR)
-
-class _TorchClassesFilter(logging.Filter):
-    def filter(self, record: logging.LogRecord) -> bool:
-        return "torch.classes" not in record.getMessage()
-
-logging.getLogger().addFilter(_TorchClassesFilter())
-
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
