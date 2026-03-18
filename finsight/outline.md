@@ -11,13 +11,12 @@ To develop FinSight, a domain-specific question-answering (QA) system over Micro
 
 ## 2. Project Scope
 This project implements & evaluates 3 RAG variants
-```
 | Variant | Pipeline | Description |
 |---------|----------|-------------|
 | **V1 Baseline** | Dense → Generate | Fixed-size chunking + embedding retrieval |
 | **V2 Advanced A** | Dense → Rerank → Generate | Dense retrieval + cross-encoder reranking |
 | **V3 Advanced B** | BM25 + Dense → RRF → Rerank → Generate | Hybrid retrieval + RRF fusion + reranking |
-```
+
 The project addresses a real-world financial QA task, aligning with domain-specific RAG system requirements.
 
 ## 3. System Architecture
@@ -93,7 +92,7 @@ Answer + Citations
 
 ## 4. Dataset
 The following Microsoft SEC filings are indexed (already downloaded to `data/raw/`):
-```
+
 | Filename | Document | Period |
 |----------|----------|--------|
 | `msft_10k_fy2022.pdf` | Annual Report (10-K) | FY2022 (ended Jun 30, 2022) |
@@ -105,7 +104,7 @@ The following Microsoft SEC filings are indexed (already downloaded to `data/raw
 | `msft_10q_q3_fy2025.pdf` | Quarterly Report (10-Q) | Q3 FY2025 (Mar 2025) |
 | `msft_10q_q1_fy2026.pdf` | Quarterly Report (10-Q) | Q1 FY2026 (Sep 2025) |
 | `msft_10q_q2_fy2026.pdf` | Quarterly Report (10-Q) | Q2 FY2026 (Dec 2025) |
-```
+
 Source: [SEC EDGAR](https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=789019) / [Microsoft Investor Relations](https://investor.microsoft.com/sec-filings)
 
 **Note:** Microsoft fiscal year ends June 30. Q1=Jul–Sep, Q2=Oct–Dec, Q3=Jan–Mar, Q4=Apr–Jun.
