@@ -114,6 +114,8 @@ Characteristics:
 * Structured but noisy text (tables, footnotes)
 * Requires numerical reasoning, and cross-section referencing
 
+
+
 ## **5. Methodology (Detailed Design & Rationale)**
 
 ### **5.1 Document Processing & Chunking Strategy**
