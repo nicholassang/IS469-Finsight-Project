@@ -7,14 +7,17 @@ Supports two backends — set in config/settings.yaml under generation.backend:
   - "ollama"  : Local Ollama server (llama3.2, mistral, qwen2.5, etc.) — free, no API key
 
 Enforces all guardrails: grounded answers only, no investment advice, citations required.
+
+Enhanced with ContextManager for dynamic context truncation to prevent token limit errors.
 """
 
 import os
 import time
-from typing import List, Dict
+from typing import List, Dict, Optional, Tuple
 
 from src.utils.config_loader import load_config, load_prompts
 from src.utils.logger import get_logger
+from src.generation.context_manager import ContextManager
 
 logger = get_logger(__name__)
 
@@ -57,7 +60,18 @@ def _is_out_of_scope(question: str, allowed_topics: List[str]) -> bool:
     return not any(topic.lower() in q_lower for topic in allowed_topics)
 
 
-def format_context(chunks: List[Dict], max_chunk_chars: int = 1500) -> str:
+def format_context(chunks: List[Dict], max_chunk_chars: int = 1500, include_truncation_warning: bool = True) -> str:
+    """
+    Format chunks into a context string for the prompt.
+
+    Args:
+        chunks: List of chunk dictionaries
+        max_chunk_chars: Maximum characters per chunk (legacy, ContextManager handles this better)
+        include_truncation_warning: Whether to note truncated chunks
+
+    Returns:
+        Formatted context string with [Doc-N] headers
+    """
     lines = []
     for i, chunk in enumerate(chunks, start=1):
         m = chunk.get("metadata", {})
@@ -69,6 +83,11 @@ def format_context(chunks: List[Dict], max_chunk_chars: int = 1500) -> str:
             f"Page: {m.get('page_number', '?')} | "
             f"File: {m.get('source_file', 'N/A')}"
         )
+
+        # Add truncation indicator if chunk was truncated by ContextManager
+        if chunk.get("truncated") and include_truncation_warning:
+            header += " [TRUNCATED]"
+
         text = chunk.get("text", "").strip()
         if len(text) > max_chunk_chars:
             text = text[:max_chunk_chars] + " ...[truncated]"
@@ -213,12 +232,22 @@ class Generator:
     """
     Handles prompt assembly and LLM calls.
     Backend selected from config: generation.backend = "openai" | "ollama"
+
+    Enhanced with ContextManager for automatic context truncation to prevent token limit errors.
     """
 
     def __init__(self, cfg: dict = None):
         self.cfg = cfg or load_config()
         self.prompts = load_prompts()
         backend = self.cfg["generation"].get("backend", "openai").lower()
+
+        # Initialize ContextManager for dynamic truncation
+        model_name = self.cfg["generation"].get("model", "qwen2.5-14b")
+        self.context_manager = ContextManager(
+            model_name=model_name,
+            reserved_for_output=self.cfg["generation"].get("max_tokens", 512),
+            reserved_for_prompt=800,  # Approximate prompt template size
+        )
 
         if backend == "ollama":
             self._backend = OllamaBackend(self.cfg)
@@ -252,7 +281,23 @@ class Generator:
         if not chunks:
             return self._no_context_response()
 
-        context = format_context(chunks, max_chunk_chars=self.cfg["generation"].get("max_chunk_chars", 1500))
+        # Use ContextManager to fit chunks within token budget
+        fitted_chunks, context_stats = self.context_manager.fit_context(
+            chunks,
+            min_chunks=3,  # Always try to include at least 3 chunks
+        )
+
+        if context_stats.get('truncated'):
+            logger.info(
+                f"Generator: Context truncated from {context_stats['original_count']} to "
+                f"{context_stats['selected_count']} chunks "
+                f"({context_stats['original_tokens']} → {context_stats['selected_tokens']} tokens)"
+            )
+
+        context = format_context(
+            fitted_chunks,
+            max_chunk_chars=self.cfg["generation"].get("max_chunk_chars", 1800)
+        )
         system_prompt = self.prompts["qa_system"]
 
         # Guardrail 3: Append citation requirement to system prompt
@@ -277,6 +322,7 @@ class Generator:
             "context_used": context,
             "insufficient_evidence": insufficient,
             "error": raw.get("error"),
+            "context_stats": context_stats,  # Include truncation stats
         }
 
     def _investment_advice_refusal(self) -> Dict:

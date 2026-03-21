@@ -17,6 +17,8 @@ paths:
   retrieval_logs: indexes/retrieval_logs
 
 embeddings:
+  # Base model (default). Swap to fine-tuned model after running finetune_embedder.sh:
+  #   model: models/finsight-embedder
   model: sentence-transformers/all-mpnet-base-v2
   batch_size: 32
   normalize: true
@@ -30,9 +32,11 @@ retrieval:
   final_context_k: 10
   period_guaranteed_slots: 3   # guarantee >=N context slots from detected fiscal period
   rrf_k: 60              # RRF constant — do not change without reason
-  weak_evidence_threshold: 0.3
+  weak_evidence_threshold: -3.0  # cross-encoder logits range ~-10 to +10; scores above -3 indicate relevance
 
 reranker:
+  # Base model (default). Swap to fine-tuned model after running finetune_reranker.sh:
+  #   model: models/finsight-reranker
   model: cross-encoder/ms-marco-MiniLM-L-6-v2
   max_length: 512
 

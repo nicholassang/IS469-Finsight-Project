@@ -3,6 +3,8 @@ hybrid_retriever.py
 Merges dense and sparse retrieval results using Reciprocal Rank Fusion (RRF).
 Formula: RRF_score(d) = Σ 1/(k + rank(d)) across all ranked lists
 Standard k=60 avoids large penalties for documents ranked in the top positions.
+
+Enhanced with improved fiscal period detection using FiscalPeriodExtractor.
 """
 
 import json
@@ -14,6 +16,7 @@ from typing import List, Dict, Optional
 
 from src.retrieval.dense_retriever import DenseRetriever
 from src.retrieval.sparse_retriever import SparseRetriever
+from src.retrieval.query_processor import FiscalPeriodExtractor, QueryPreprocessor
 from src.utils.config_loader import load_config
 from src.utils.logger import get_logger
 
@@ -72,6 +75,8 @@ class HybridRetriever:
     """
     Combines BM25 and dense retrieval with RRF fusion.
     Query → dense candidates + sparse candidates → merged by RRF → sorted.
+
+    Enhanced with improved fiscal period detection and filtering.
     """
 
     def __init__(self, cfg: dict = None):
@@ -79,8 +84,10 @@ class HybridRetriever:
         self.dense = DenseRetriever(self.cfg)
         self.sparse = SparseRetriever(self.cfg)
         self.k = self.cfg["retrieval"]["rrf_k"]  # RRF constant
+        self.fiscal_extractor = FiscalPeriodExtractor()
+        self.query_preprocessor = QueryPreprocessor()
 
-    def retrieve(self, query: str, top_k: int = None) -> List[Dict]:
+    def retrieve(self, query: str, top_k: int = None, skip_rerank: bool = False) -> List[Dict]:
         """
         Retrieve candidates from both dense and sparse retrievers,
         merge with RRF, return fused ranked list.
@@ -89,6 +96,11 @@ class HybridRetriever:
         targeted metadata-filtered dense search for that period so that
         table-heavy chunks with poor embeddings are guaranteed to enter
         the candidate pool.
+
+        Args:
+            query: The search query
+            top_k: Maximum results to return (uses config default if None)
+            skip_rerank: If True, skip any reranking step (for ablation studies)
 
         Returns:
             List of chunk dicts with 'rrf_score', 'retriever'='hybrid'
@@ -99,8 +111,12 @@ class HybridRetriever:
 
         t0 = time.time()
 
+        # Extract fiscal info using new extractor
+        fiscal_info = self.fiscal_extractor.extract(query)
+
         # Get candidates from each retriever
-        d_results = self.dense.retrieve(query, top_k=dense_top_k)
+        # Pass fiscal filtering to dense retriever
+        d_results = self.dense.retrieve(query, top_k=dense_top_k, use_fiscal_filtering=True)
         s_results = self.sparse.retrieve(query, top_k=sparse_top_k)
 
         # ── Fiscal-period boost ───────────────────────────────────────────
@@ -159,10 +175,11 @@ class HybridRetriever:
             merged.append(chunk)
 
         latency_ms = (time.time() - t0) * 1000
-        self._log_retrieval(query, merged, latency_ms, len(d_results), len(s_results))
+        self._log_retrieval(query, merged, latency_ms, len(d_results), len(s_results), fiscal_info)
         logger.debug(
             f"HybridRetriever: {len(merged)} merged chunks "
             f"(dense={len(d_results)}, sparse={len(s_results)}) in {latency_ms:.0f}ms"
+            f" | fiscal_period={fiscal_info.get('raw')}"
         )
 
         return merged
@@ -174,6 +191,7 @@ class HybridRetriever:
         latency_ms: float,
         n_dense: int,
         n_sparse: int,
+        fiscal_info: Optional[Dict] = None,
     ):
         log_dir = Path(self.cfg["paths"].get("retrieval_logs", "indexes/retrieval_logs"))
         log_dir.mkdir(parents=True, exist_ok=True)
@@ -190,6 +208,9 @@ class HybridRetriever:
             "top_rrf_scores": [c.get("rrf_score", 0) for c in chunks[:5]],
             "found_by": [c.get("found_by", "") for c in chunks[:5]],
             "latency_ms": round(latency_ms, 2),
+            "fiscal_period_detected": fiscal_info.get("raw") if fiscal_info else None,
+            "fiscal_year": fiscal_info.get("fiscal_year") if fiscal_info else None,
+            "fiscal_quarter": fiscal_info.get("quarter") if fiscal_info else None,
         }
         with open(log_path, "a", encoding="utf-8") as f:
             f.write(json.dumps(entry) + "\n")

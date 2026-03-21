@@ -33,3 +33,12 @@ experiment_C:
   window_size: 5             # sentences per chunk
   overlap_sentences: 1       # sentences shared between consecutive chunks
   min_chunk_tokens: 30
+
+experiment_D:
+  # Semantic — SEC section-aware + financial table preservation (Phase 3)
+  # Splits at PART / ITEM / NOTE headers; keeps tables intact; falls back
+  # to paragraph splitting for oversized sections.
+  strategy: semantic
+  max_chunk_tokens: 600      # hard ceiling per chunk
+  min_chunk_tokens: 80       # merge chunks below this into neighbour
+  tokenizer: cl100k_base

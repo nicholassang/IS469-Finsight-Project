@@ -10,8 +10,27 @@ qa_system: |
 
   MICROSOFT FISCAL CALENDAR: Microsoft's fiscal year runs July 1 – June 30.
     FY2024 = Jul 1 2023 – Jun 30 2024 (Q1: Jul–Sep 2023, Q2: Oct–Dec 2023, Q3: Jan–Mar 2024, Q4: Apr–Jun 2024).
-    FY2025 = Jul 1 2024 – Jun 30 2025. FY2026 = Jul 1 2025 – Jun 30 2026.
-    10-K filings cover a full fiscal year. 10-Q filings cover one quarter plus cumulative YTD periods.
+    FY2025 = Jul 1 2024 – Jun 30 2025 (Q1: Jul–Sep 2024, Q2: Oct–Dec 2024, Q3: Jan–Mar 2025, Q4: Apr–Jun 2025).
+    FY2026 = Jul 1 2025 – Jun 30 2026 (Q1: Jul–Sep 2025, Q2: Oct–Dec 2025, Q3: Jan–Mar 2026, Q4: Apr–Jun 2026).
+    10-K filings cover a full fiscal year (filed after Q4).
+    10-Q filings cover one quarter plus cumulative YTD periods.
+
+  CRITICAL — TEMPORAL ACCURACY:
+  When the question mentions a SPECIFIC fiscal period (e.g., "Q2 FY2025", "FY2024"):
+  1. FIRST identify which context excerpts are from that EXACT period by checking the
+     fiscal_period in each [Doc-N] header.
+  2. ONLY use data from excerpts that match the requested period.
+  3. If the question asks about "Q2 FY2025" but you only have data for "Q1 FY2025",
+     you MUST say: "The provided context does not contain data specifically for Q2 FY2025.
+     The context includes Q1 FY2025 data which shows..."
+  4. NEVER substitute data from a different quarter or year without explicitly stating so.
+
+  QUARTER END DATE REFERENCE:
+    Q1 FY2025 = quarter ended September 30, 2024
+    Q2 FY2025 = quarter ended December 31, 2024
+    Q3 FY2025 = quarter ended March 31, 2025
+    Q1 FY2026 = quarter ended September 30, 2025
+    Q2 FY2026 = quarter ended December 31, 2025
 
   STRICT RULES:
   1. Answer ONLY from the provided context excerpts.
@@ -33,6 +52,12 @@ qa_system: |
   6. If the question asks for an opinion or recommendation (e.g. "should I buy"),
      decline politely and explain that this tool is for research only.
 
+  NUMBER VERIFICATION:
+  Before stating any numerical value in your answer:
+  1. Locate the EXACT number in the context excerpts.
+  2. Verify the fiscal period of that number matches what was asked.
+  3. If the exact number is not in the context, say so explicitly rather than guessing.
+
 qa_user: |
   CONTEXT FROM MICROSOFT FILINGS:
   {context}
@@ -41,6 +66,8 @@ qa_user: |
 
   Provide a factual, well-cited answer using only the context above.
   Format citations inline as [Doc-N].
+  If the question asks about a specific fiscal period, verify that your cited sources
+  are from that exact period before answering.
 
 # ── GPT-as-judge faithfulness rubric ──────────────────────────────────────────
 judge_system: |

@@ -261,8 +261,19 @@ def chunk_text(text: str, config: dict = None) -> List[Dict]:
             min_chunk_tokens=config.get("min_chunk_tokens", 30),
             tokenizer=config.get("tokenizer", "cl100k_base"),
         )
+    elif strategy == "semantic":
+        from src.chunking.semantic_chunker import SemanticChunker
+        chunker = SemanticChunker(
+            max_chunk_tokens=config.get("max_chunk_tokens", 600),
+            min_chunk_tokens=config.get("min_chunk_tokens", 80),
+            tokenizer=config.get("tokenizer", "cl100k_base"),
+        )
+        return chunker.chunk_text(text)
     else:
-        raise ValueError(f"Unknown chunking strategy: '{strategy}'. Use 'fixed_token' or 'sentence_window'")
+        raise ValueError(
+            f"Unknown chunking strategy: '{strategy}'. "
+            f"Use 'fixed_token', 'sentence_window', or 'semantic'"
+        )
 
 
 def chunk_pages(pages: List[dict], config: dict = None) -> List[Dict]:

@@ -2,16 +2,19 @@
 dense_retriever.py
 Query-time dense retrieval using ChromaDB + sentence-transformers.
 Can run completely independently of BM25.
+
+Enhanced with fiscal period filtering to prevent temporal retrieval errors.
 """
 
 import time
 import json
 from pathlib import Path
 from datetime import datetime
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 from src.utils.config_loader import load_config
 from src.utils.logger import get_logger
+from src.retrieval.query_processor import FiscalPeriodExtractor, QueryPreprocessor
 
 logger = get_logger(__name__)
 
@@ -32,6 +35,8 @@ class DenseRetriever:
     """
     Retrieves top-k semantically similar chunks from ChromaDB.
     Thread-safe for concurrent Streamlit sessions (model is stateless at query time).
+
+    Enhanced with fiscal period filtering to address temporal retrieval errors.
     """
 
     def __init__(self, cfg: dict = None):
@@ -43,6 +48,8 @@ class DenseRetriever:
         self.cfg = cfg or load_config()
         self._model = None
         self._collection = None
+        self.query_preprocessor = QueryPreprocessor()
+        self.fiscal_extractor = FiscalPeriodExtractor()
 
     @property
     def model(self):
@@ -61,9 +68,21 @@ class DenseRetriever:
             self._collection = client.get_collection(collection_name)
         return self._collection
 
-    def retrieve(self, query: str, top_k: int = None) -> List[Dict]:
+    def retrieve(
+        self,
+        query: str,
+        top_k: int = None,
+        fiscal_filter: Optional[Dict] = None,
+        use_fiscal_filtering: bool = True,
+    ) -> List[Dict]:
         """
         Retrieve top-k chunks most similar to the query.
+
+        Args:
+            query: The search query
+            top_k: Number of chunks to retrieve
+            fiscal_filter: Optional explicit metadata filter (overrides auto-detection)
+            use_fiscal_filtering: Whether to auto-detect and filter by fiscal period
 
         Returns:
             List of dicts with keys: text, metadata, score, retriever
@@ -75,11 +94,41 @@ class DenseRetriever:
         t0 = time.time()
         q_vec = self.model.encode(query, normalize_embeddings=normalize).tolist()
 
-        results = self.collection.query(
-            query_embeddings=[q_vec],
-            n_results=min(top_k, self.collection.count()),
-            include=["documents", "metadatas", "distances"],
-        )
+        # Determine metadata filter
+        where_clause = None
+        fiscal_info = None
+
+        if fiscal_filter:
+            where_clause = fiscal_filter
+        elif use_fiscal_filtering:
+            fiscal_info = self.fiscal_extractor.extract(query)
+            where_clause = self.fiscal_extractor.to_metadata_filter(fiscal_info)
+
+        # Query ChromaDB with optional filtering
+        try:
+            if where_clause:
+                # Over-retrieve when filtering (some may be filtered out)
+                results = self.collection.query(
+                    query_embeddings=[q_vec],
+                    n_results=min(top_k * 3, self.collection.count()),
+                    where=where_clause,
+                    include=["documents", "metadatas", "distances"],
+                )
+                logger.debug(f"DenseRetriever: filtered by {where_clause}")
+            else:
+                results = self.collection.query(
+                    query_embeddings=[q_vec],
+                    n_results=min(top_k, self.collection.count()),
+                    include=["documents", "metadatas", "distances"],
+                )
+        except Exception as e:
+            # Fallback to unfiltered if filter fails
+            logger.warning(f"Filtered query failed ({e}), falling back to unfiltered")
+            results = self.collection.query(
+                query_embeddings=[q_vec],
+                n_results=min(top_k, self.collection.count()),
+                include=["documents", "metadatas", "distances"],
+            )
 
         latency_ms = (time.time() - t0) * 1000
 
@@ -97,16 +146,60 @@ class DenseRetriever:
                     "metadata": meta,
                     "score": round(score, 6),
                     "retriever": "dense",
+                    "fiscal_filtered": where_clause is not None,
                 })
+
+        # If fiscal filtering returned too few results, fallback to relaxed filter
+        if where_clause and len(chunks) < top_k // 2 and fiscal_info:
+            logger.info(f"DenseRetriever: only {len(chunks)} results with strict filter, trying relaxed")
+            relaxed_filter = self.fiscal_extractor.to_relaxed_filter(fiscal_info)
+            if relaxed_filter and relaxed_filter != where_clause:
+                # Re-query with relaxed filter
+                try:
+                    relaxed_results = self.collection.query(
+                        query_embeddings=[q_vec],
+                        n_results=min(top_k * 2, self.collection.count()),
+                        where=relaxed_filter,
+                        include=["documents", "metadatas", "distances"],
+                    )
+                    # Add new results not already in chunks
+                    existing_ids = {c["metadata"].get("chunk_id") for c in chunks}
+                    for text, meta, dist in zip(
+                        relaxed_results["documents"][0],
+                        relaxed_results["metadatas"][0],
+                        relaxed_results["distances"][0],
+                    ):
+                        if meta.get("chunk_id") not in existing_ids:
+                            score = 1.0 - float(dist)
+                            chunks.append({
+                                "text": text,
+                                "metadata": meta,
+                                "score": round(score, 6),
+                                "retriever": "dense",
+                                "fiscal_filtered": True,
+                                "relaxed_match": True,
+                            })
+                except Exception as e:
+                    logger.warning(f"Relaxed filter query failed: {e}")
 
         # Sort by score descending (should already be, but be explicit)
         chunks.sort(key=lambda x: x["score"], reverse=True)
 
-        self._log_retrieval(query, chunks, latency_ms, method="dense")
+        # Trim to top_k
+        chunks = chunks[:top_k]
+
+        self._log_retrieval(query, chunks, latency_ms, method="dense", fiscal_info=fiscal_info)
         logger.debug(f"DenseRetriever: {len(chunks)} chunks in {latency_ms:.0f}ms")
         return chunks
 
-    def _log_retrieval(self, query: str, chunks: List[dict], latency_ms: float, method: str):
+    def _log_retrieval(
+        self,
+        query: str,
+        chunks: List[dict],
+        latency_ms: float,
+        method: str,
+        fiscal_info: Optional[Dict] = None,
+    ):
         """Append retrieval log entry to indexes/retrieval_logs/."""
         log_dir = Path(self.cfg["paths"].get("retrieval_logs", "indexes/retrieval_logs"))
         log_dir.mkdir(parents=True, exist_ok=True)
@@ -120,6 +213,8 @@ class DenseRetriever:
             "top_chunk_ids": [c["metadata"].get("chunk_id", "") for c in chunks[:5]],
             "top_scores": [c["score"] for c in chunks[:5]],
             "latency_ms": round(latency_ms, 2),
+            "fiscal_period_detected": fiscal_info.get("raw") if fiscal_info else None,
+            "fiscal_filtered": any(c.get("fiscal_filtered") for c in chunks),
         }
         with open(log_path, "a", encoding="utf-8") as f:
             f.write(json.dumps(entry) + "\n")
