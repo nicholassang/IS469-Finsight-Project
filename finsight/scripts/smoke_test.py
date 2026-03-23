@@ -16,6 +16,8 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
+import chromadb_compat  # noqa: F401  — must precede any chromadb/pipeline import
+
 PASS = "✓"
 FAIL = "✗"
 WARN = "⚠"
