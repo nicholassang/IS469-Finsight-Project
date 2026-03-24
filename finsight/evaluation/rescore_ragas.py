@@ -70,7 +70,7 @@ def compute_ragas_metrics_stable(results: list, cfg: dict) -> dict:
                 model="gpt-4o-mini",
                 api_key=openai_key,
                 temperature=0.0,
-                max_tokens=512,
+                max_tokens=2048,  # Increased from 512 to avoid LLMDidNotFinishException
                 timeout=60,
             )
         )
@@ -85,7 +85,7 @@ def compute_ragas_metrics_stable(results: list, cfg: dict) -> dict:
                 base_url=gen_cfg.get("base_url", "http://localhost:8000/v1"),
                 api_key=gen_cfg.get("api_key", "dummy"),
                 temperature=0.0,
-                max_tokens=512,
+                max_tokens=2048,  # Increased from 512 to avoid LLMDidNotFinishException
                 timeout=gen_cfg.get("timeout_seconds", 120),
             )
         )
@@ -131,14 +131,18 @@ def compute_ragas_metrics_stable(results: list, cfg: dict) -> dict:
                 return float(np.mean(clean)) if clean else 0.0
             return float(val)
 
-        return {
+        scores = {
             "faithfulness": round(_safe_mean(eval_result["faithfulness"]), 4),
             "answer_relevancy": round(_safe_mean(eval_result["answer_relevancy"]), 4),
             "context_recall": round(_safe_mean(eval_result["context_recall"]), 4),
             "context_precision": round(_safe_mean(eval_result["context_precision"]), 4),
         }
+        logger.info(f"RAGAS scores: {scores}")
+        return scores
     except Exception as e:
         logger.error(f"RAGAS scoring failed: {e}")
+        import traceback
+        logger.error(f"Traceback: {traceback.format_exc()}")
         return {"faithfulness": 0.0, "answer_relevancy": 0.0,
                 "context_recall": 0.0, "context_precision": 0.0}
 
