@@ -156,7 +156,7 @@ def main():
         output_path = processed_dir / f"{doc_id}.json"
 
         if output_path.exists() and not args.force:
-            with open(output_path) as f:
+            with open(output_path, "r", encoding="utf-8") as f:
                 existing = json.load(f)
             logger.info(f"[CACHED] {doc_id}: {len(existing)} chunks already processed (use --force to re-ingest)")
             total_chunks += len(existing)

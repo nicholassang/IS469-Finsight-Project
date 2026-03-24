@@ -1,8 +1,8 @@
 {
   "chunk_id": "str \u2014 unique identifier: {company}_{doctype}_{period}_p{page}_c{chunk}",
-  "company": "str \u2014 always 'Grab Holdings'",
-  "ticker": "str \u2014 'GRAB'",
-  "doc_type": "str \u2014 enum: 20-F, 6-K, earnings_pr, investor_deck, earnings_deck",
+  "company": "str \u2014 always 'Microsoft Corporation'",
+  "ticker": "str \u2014 'MSFT'",
+  "doc_type": "str \u2014 enum: 10-K, 10-Q",
   "source_file": "str \u2014 filename in data/raw/",
   "source_url": "str \u2014 official URL",
   "filing_date": "str \u2014 ISO 8601 YYYY-MM-DD",

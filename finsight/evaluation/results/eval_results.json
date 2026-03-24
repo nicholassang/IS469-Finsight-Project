@@ -1360,565 +1360,351 @@
       {
         "id": "q001",
         "question": "What was Microsoft's gross profit and gross margin percentage for FY2024?",
-        "answer": "As of my last update, I do not have the exact figures for Microsoft's gross profit and gross margin percentage for fiscal year 2024 since this information would be from recent filings or announcements that I don't have access to beyond my current knowledge cutoff. However, for the most recent complete fiscal year prior to that (which would be FY2023), Microsoft reported a gross profit of approximately $167 billion and a gross margin percentage of around 70%. For the precise figures for FY2024, you would need to refer to Microsoft's latest annual report or 10-K filing.",
+        "answer": "Error calling OpenAI: Connection error.",
         "contexts": [],
         "ground_truth": "Microsoft's gross profit for FY2024 was approximately $171.0 billion on total revenue of $245.1 billion, yielding a gross margin of approximately 69.8%. This reflects an ongoing revenue mix shift toward higher-margin cloud and software services.",
         "category": "factual_retrieval",
         "source_doc": "msft_10k_fy2024",
         "variant": "v0_llm_only",
-        "latency_seconds": 8.126,
+        "latency_seconds": 14.89,
         "retrieval_latency_ms": 0,
         "reranking_latency_ms": 0,
-        "generation_latency_ms": 8125.77,
+        "generation_latency_ms": 14887.77,
         "insufficient_evidence": false,
         "numerical_match": false,
-        "error": null
+        "error": "Connection error."
       },
       {
         "id": "q002",
         "question": "What was Microsoft's research and development expense in FY2024?",
-        "answer": "I do not have the exact figure for Microsoft's research and development expense for fiscal year 2024 as this information would be from recent filings or announcements that I don't have direct access to. However, historically, Microsoft has been a leader in R&D spending. For example, in fiscal year 2023, Microsoft reported an R&D expense of approximately $25.9 billion. Given the company's ongoing commitment to innovation, it's reasonable to expect that the R&D expenditure in FY2024 would be in a similar range or higher, but for precise figures, one would need to consult the latest official Microsoft filings or reports.",
+        "answer": "Error calling OpenAI: Connection error.",
         "contexts": [],
         "ground_truth": "Microsoft's research and development expense was approximately $29.5 billion in FY2024, representing roughly 12% of total revenue. This investment supported continued development of AI capabilities, Azure cloud infrastructure, and Microsoft 365 product innovation.",
         "category": "factual_retrieval",
         "source_doc": "msft_10k_fy2024",
         "variant": "v0_llm_only",
-        "latency_seconds": 6.952,
+        "latency_seconds": 13.407,
         "retrieval_latency_ms": 0,
         "reranking_latency_ms": 0,
-        "generation_latency_ms": 6951.57,
+        "generation_latency_ms": 13406.55,
         "insufficient_evidence": false,
         "numerical_match": false,
-        "error": null
+        "error": "Connection error."
       },
       {
         "id": "q003",
         "question": "What was Microsoft's net income for FY2023?",
-        "answer": "Microsoft reported a net income of approximately $72.7 billion for the fiscal year 2023, which ended on June 30, 2023. Please note that for precise figures, one should refer directly to the official SEC filings.",
+        "answer": "Error calling OpenAI: Connection error.",
         "contexts": [],
         "ground_truth": "Microsoft reported net income of $72.4 billion for FY2023 (fiscal year ended June 30, 2023), on total revenue of $211.9 billion, representing a net margin of approximately 34%.",
         "category": "factual_retrieval",
         "source_doc": "msft_10k_fy2023",
         "variant": "v0_llm_only",
-        "latency_seconds": 2.871,
+        "latency_seconds": 13.589,
         "retrieval_latency_ms": 0,
         "reranking_latency_ms": 0,
-        "generation_latency_ms": 2870.98,
+        "generation_latency_ms": 13589.06,
         "insufficient_evidence": false,
-        "numerical_match": true,
-        "error": null
+        "numerical_match": false,
+        "error": "Connection error."
       },
       {
         "id": "q004",
         "question": "What was Microsoft's operating income for FY2022?",
-        "answer": "For fiscal year 2022, which ended June 30, 2022, Microsoft reported an operating income of approximately $72.7 billion. Please note that for precise figures, one should refer directly to the official filings or reports from Microsoft.",
+        "answer": "Error calling OpenAI: Connection error.",
         "contexts": [],
         "ground_truth": "Microsoft reported operating income of approximately $83.4 billion for FY2022 (fiscal year ended June 30, 2022), on total revenue of $198.3 billion, representing an operating margin of approximately 42%.",
         "category": "factual_retrieval",
         "source_doc": "msft_10k_fy2022",
         "variant": "v0_llm_only",
-        "latency_seconds": 2.971,
+        "latency_seconds": 13.49,
         "retrieval_latency_ms": 0,
         "reranking_latency_ms": 0,
-        "generation_latency_ms": 2970.31,
+        "generation_latency_ms": 13488.84,
         "insufficient_evidence": false,
-        "numerical_match": true,
-        "error": null
+        "numerical_match": false,
+        "error": "Connection error."
       },
       {
         "id": "q005",
         "question": "What was Microsoft's total revenue for FY2024?",
-        "answer": "I do not have the exact revenue figure for Microsoft's fiscal year 2024 as this information would be from recent filings or announcements that I don't have direct access to. Typically, such figures are released during the company's earnings call or in their quarterly and annual reports. For precise details, you should refer to the latest SEC filings or Microsoft's official financial statements.",
+        "answer": "Error calling OpenAI: Connection error.",
         "contexts": [],
         "ground_truth": "Microsoft reported total revenue of $245.1 billion for FY2024 (fiscal year ended June 30, 2024), representing 16% year-over-year growth from $211.9 billion in FY2023.",
         "category": "factual_retrieval",
         "source_doc": "msft_10k_fy2024",
         "variant": "v0_llm_only",
-        "latency_seconds": 4.0,
+        "latency_seconds": 13.548,
         "retrieval_latency_ms": 0,
         "reranking_latency_ms": 0,
-        "generation_latency_ms": 3999.79,
+        "generation_latency_ms": 13548.25,
         "insufficient_evidence": false,
-        "numerical_match": true,
-        "error": null
+        "numerical_match": false,
+        "error": "Connection error."
       },
       {
         "id": "q006",
         "question": "Did Azure's constant-currency growth rate accelerate or decelerate from Q1 FY2025 to Q2 FY2025, and by how much?",
-        "answer": "As of my last update, I do not have specific figures for Azure's constant-currency growth rate for Q1 FY2025 and Q2 FY2025. However, typically such information would be available in Microsoft's earnings reports and filings with the SEC. To accurately determine whether Azure's constant-currency growth rate accelerated or decelerated from Q1 FY2025 to Q2 FY2025, and by how much, you would need to refer to the latest earnings release or the relevant sections of the 10-Q or 10-K filings for those quarters. These documents will provide the precise growth rates needed to make this comparison.",
+        "answer": "Error calling OpenAI: Connection error.",
         "contexts": [],
         "ground_truth": "Azure and other cloud services growth decelerated slightly from approximately 33% constant-currency growth in Q1 FY2025 (quarter ended September 30, 2024) to approximately 31% in Q2 FY2025 (quarter ended December 31, 2024), a decrease of approximately 2 percentage points quarter-over-quarter.",
         "category": "temporal_reasoning",
         "source_doc": "msft_10q_q2_fy2025",
         "variant": "v0_llm_only",
-        "latency_seconds": 7.087,
+        "latency_seconds": 13.478,
         "retrieval_latency_ms": 0,
         "reranking_latency_ms": 0,
-        "generation_latency_ms": 7086.42,
+        "generation_latency_ms": 13477.96,
         "insufficient_evidence": false,
         "numerical_match": false,
-        "error": null
+        "error": "Connection error."
       },
       {
         "id": "q007",
         "question": "What was Microsoft's total revenue in Q1 FY2025, and what was the year-over-year growth rate?",
-        "answer": "I do not have access to the exact figures for Microsoft's total revenue in Q1 FY2025 as this information would be from future filings which I do not have access to. My knowledge is current as of my last update in early 2023, so I cannot provide precise historical financial data beyond that point. For the most accurate and up-to-date information, you should refer to Microsoft's latest quarterly earnings report or their filings with the Securities and Exchange Commission (SEC).",
+        "answer": "Error calling OpenAI: Connection error.",
         "contexts": [],
         "ground_truth": "Microsoft reported revenue of $65.6 billion in Q1 FY2025 (quarter ended September 30, 2024), representing 16% year-over-year growth compared to the same quarter of the prior fiscal year.",
         "category": "temporal_reasoning",
         "source_doc": "msft_10q_q1_fy2025",
         "variant": "v0_llm_only",
-        "latency_seconds": 5.215,
+        "latency_seconds": 13.619,
         "retrieval_latency_ms": 0,
         "reranking_latency_ms": 0,
-        "generation_latency_ms": 5213.67,
+        "generation_latency_ms": 13619.07,
         "insufficient_evidence": false,
         "numerical_match": false,
-        "error": null
+        "error": "Connection error."
       },
       {
         "id": "q008",
         "question": "What was Microsoft's Intelligent Cloud segment revenue in Q1 FY2025?",
-        "answer": "I do not have the exact revenue figures for Microsoft's Intelligent Cloud segment for Q1 FY2025, as this information would be from a future date beyond my current knowledge cutoff. To obtain the most accurate and up-to-date financial information, you should refer to the latest earnings report or official filings from Microsoft.",
+        "answer": "Error calling OpenAI: Connection error.",
         "contexts": [],
         "ground_truth": "Microsoft's Intelligent Cloud segment reported revenue of approximately $24.1 billion in Q1 FY2025 (quarter ended September 30, 2024), representing approximately 20% year-over-year growth, driven primarily by Azure and other cloud services.",
         "category": "temporal_reasoning",
         "source_doc": "msft_10q_q1_fy2025",
         "variant": "v0_llm_only",
-        "latency_seconds": 3.379,
+        "latency_seconds": 13.593,
         "retrieval_latency_ms": 0,
         "reranking_latency_ms": 0,
-        "generation_latency_ms": 3378.62,
+        "generation_latency_ms": 13592.89,
         "insufficient_evidence": false,
         "numerical_match": false,
-        "error": null
+        "error": "Connection error."
       },
       {
         "id": "q009",
         "question": "What was Microsoft's total revenue in Q2 FY2025 and how did it compare to Q2 FY2024?",
-        "answer": "I do not have access to the exact figures for Q2 FY2025 as this would be future information at the time of this writing, and my training data only goes up to early 2024. Therefore, I cannot provide the precise revenue for Q2 FY2025. However, for Q2 FY2024, Microsoft reported a total revenue of approximately $58.5 billion. To get the most accurate comparison between Q2 FY2025 and Q2 FY2024, you would need to refer to the official earnings release or SEC filings for Q2 FY2025 once they become available.",
+        "answer": "Error calling OpenAI: Connection error.",
         "contexts": [],
         "ground_truth": "Microsoft reported revenue of $69.6 billion in Q2 FY2025 (quarter ended December 31, 2024), representing approximately 12% year-over-year growth compared to approximately $62.0 billion in Q2 FY2024.",
         "category": "temporal_reasoning",
         "source_doc": "msft_10q_q2_fy2025",
         "variant": "v0_llm_only",
-        "latency_seconds": 7.061,
+        "latency_seconds": 13.477,
         "retrieval_latency_ms": 0,
         "reranking_latency_ms": 0,
-        "generation_latency_ms": 7061.09,
+        "generation_latency_ms": 13476.62,
         "insufficient_evidence": false,
-        "numerical_match": true,
-        "error": null
+        "numerical_match": false,
+        "error": "Connection error."
       },
       {
         "id": "q010",
         "question": "What was the sequential revenue increase from Q1 FY2025 to Q2 FY2025, and which segment was the primary driver?",
-        "answer": "I do not have access to the exact sequential revenue increase figures for Q1 FY2025 to Q2 FY2025 as this information would be from future filings or has not been publicly released at the time of my last update. However, typically, Microsoft breaks down its revenue by segments such as Productivity and Business Processes, Intelligent Cloud, and More Personal Computing. To determine the primary driver of revenue growth between those quarters, one would need to look at the detailed segmental performance reported in their quarterly earnings release. If you have the specific figures or if the report has been released, I can help analyze which segment contributed most significantly to the revenue increase.",
+        "answer": "Error calling OpenAI: Connection error.",
         "contexts": [],
         "ground_truth": "Microsoft's revenue grew sequentially from $65.6 billion in Q1 FY2025 to $69.6 billion in Q2 FY2025, an increase of approximately $4.0 billion quarter-over-quarter. The Intelligent Cloud segment, driven by continued Azure growth of approximately 31% in constant currency, was the primary contributor to sequential revenue expansion.",
         "category": "temporal_reasoning",
         "source_doc": "msft_10q_q2_fy2025",
         "variant": "v0_llm_only",
-        "latency_seconds": 6.965,
+        "latency_seconds": 13.579,
         "retrieval_latency_ms": 0,
         "reranking_latency_ms": 0,
-        "generation_latency_ms": 6965.13,
+        "generation_latency_ms": 13578.28,
         "insufficient_evidence": false,
         "numerical_match": false,
-        "error": null
+        "error": "Connection error."
       },
       {
         "id": "q011",
         "question": "What was Microsoft's operating margin in FY2024 compared to FY2022, and what drove the change?",
-        "answer": "As of my last update, I do not have the exact figures for Microsoft's operating margin for fiscal year 2024 since this information would be from recent filings or announcements that I don't have access to. However, I can discuss the trend based on the available data up to fiscal year 2022 and provide an educated assessment based on typical factors that influence such metrics.\n\nFor fiscal year 2022, Microsoft reported an operating margin of approximately 35%. To determine the change from FY2022 to FY2024, we would need to look at the most recent financial reports. Typically, changes in operating margins can be driven by several factors including:\n\n1. Revenue growth across different segments like Intelligent Cloud, Productivity and Business Processes, and More Personal Computing.\n2. Cost management initiatives.\n3. Investment in new technologies and services.\n4. Economic conditions affecting demand for their products and services.\n\nIf you have access to the latest annual report or earnings call transcripts, those would provide the precise figures and detailed explanations for any changes observed between FY2022 and FY2024.",
+        "answer": "Error calling OpenAI: Connection error.",
         "contexts": [],
         "ground_truth": "Microsoft's operating margin in FY2024 was approximately 44.6% (operating income of $109.4 billion on revenue of $245.1 billion), compared to approximately 42.1% in FY2022 (operating income of approximately $83.4 billion on revenue of $198.3 billion). The approximately 2.5 percentage point improvement was driven by a favourable revenue mix shift toward higher-margin cloud services and operating leverage as revenue grew faster than the expense base.",
         "category": "multi_hop_reasoning",
         "source_doc": "msft_10k_fy2024",
         "variant": "v0_llm_only",
-        "latency_seconds": 11.885,
+        "latency_seconds": 13.54,
         "retrieval_latency_ms": 0,
         "reranking_latency_ms": 0,
-        "generation_latency_ms": 11883.93,
+        "generation_latency_ms": 13539.34,
         "insufficient_evidence": false,
         "numerical_match": false,
-        "error": null
+        "error": "Connection error."
       },
       {
         "id": "q012",
         "question": "Which of Microsoft's three business segments had the highest revenue growth rate between FY2023 and FY2024, and what was the growth rate?",
-        "answer": "Based on Microsoft's reported financial results, the segment with the highest revenue growth rate between fiscal year 2023 and fiscal year 2024 was the Intelligent Cloud segment. The Intelligent Cloud segment includes Azure public cloud services, Microsoft Server Products, and other services. However, I do not have the exact growth rate figures memorized here, but typically such information can be found in the detailed financial reports or earnings calls released by Microsoft. For precise figures, one would need to refer directly to Microsoft's official filings or press releases from that period.",
+        "answer": "Error calling OpenAI: Connection error.",
         "contexts": [],
         "ground_truth": "The Intelligent Cloud segment had the highest revenue growth rate between FY2023 and FY2024, growing approximately 19.8% from $87.9 billion in FY2023 to $105.4 billion in FY2024. By comparison, Productivity and Business Processes grew approximately 12.2% (from $69.3 billion to $77.7 billion) and More Personal Computing grew approximately 13.3% (from approximately $54.7 billion to $62.0 billion).",
         "category": "multi_hop_reasoning",
         "source_doc": "msft_10k_fy2024",
         "variant": "v0_llm_only",
-        "latency_seconds": 5.838,
+        "latency_seconds": 13.498,
         "retrieval_latency_ms": 0,
         "reranking_latency_ms": 0,
-        "generation_latency_ms": 5838.1,
+        "generation_latency_ms": 13497.56,
         "insufficient_evidence": false,
         "numerical_match": false,
-        "error": null
+        "error": "Connection error."
       },
       {
         "id": "q013",
         "question": "Across FY2022, FY2023, and FY2024, in which year did Microsoft report the slowest year-over-year revenue growth, and what was that rate?",
-        "answer": "Based on the available information up to fiscal year 2024, Microsoft reported its slowest year-over-year revenue growth in fiscal year 2023. The exact percentage can vary slightly depending on the quarter being compared, but generally, the year-over-year revenue growth rate for fiscal year 2023 was lower than in fiscal year 2022 and fiscal year 2024. For precise figures, you would need to refer to the official SEC filings or earnings reports from those respective fiscal years. Approximately, the revenue growth rate in FY2023 was around 10%, though you should verify this against the actual filings for exact figures.",
+        "answer": "Error calling OpenAI: Connection error.",
         "contexts": [],
         "ground_truth": "Microsoft reported the slowest revenue growth in FY2023, with total revenue increasing approximately 6.9% from $198.3 billion in FY2022 to $211.9 billion in FY2023. By comparison, revenue grew approximately 16% in FY2024 (year ended June 2024). The FY2023 slowdown reflected macroeconomic headwinds, reduced PC demand, and foreign currency headwinds.",
         "category": "multi_hop_reasoning",
         "source_doc": "msft_10k_fy2023",
         "variant": "v0_llm_only",
-        "latency_seconds": 7.174,
+        "latency_seconds": 13.529,
         "retrieval_latency_ms": 0,
         "reranking_latency_ms": 0,
-        "generation_latency_ms": 7173.26,
+        "generation_latency_ms": 13529.47,
         "insufficient_evidence": false,
-        "numerical_match": true,
-        "error": null
+        "numerical_match": false,
+        "error": "Connection error."
       },
       {
         "id": "q014",
         "question": "What share of total Microsoft revenue did the Intelligent Cloud segment represent in FY2024, and how did that share differ from FY2022?",
-        "answer": "Based on my knowledge cut-off, I can provide an estimated approach to answering this question, but for precise figures, one would need to refer to the actual filings for fiscal year 2024. As of my last update, detailed financial breakdowns for FY2024 were not available. However, for FY2023, the Intelligent Cloud segment represented approximately 39% of total revenue. In FY2022, the Intelligent Cloud segment's share was around 37%. \n\nGiven this trend, it's reasonable to estimate that the Intelligent Cloud segment's share of total revenue likely increased slightly in FY2024 compared to FY2022, but for exact figures, you should consult the latest Microsoft SEC filings or official reports.",
+        "answer": "Error calling OpenAI: Connection error.",
         "contexts": [],
         "ground_truth": "In FY2024, the Intelligent Cloud segment represented approximately 43.0% of Microsoft's total revenue ($105.4 billion of $245.1 billion). In FY2022, it represented approximately 38.0% ($75.3 billion of $198.3 billion). The segment's share of total revenue expanded by approximately 5 percentage points over two years, reflecting the accelerating adoption of Azure cloud services across enterprise customers.",
         "category": "multi_hop_reasoning",
         "source_doc": "msft_10k_fy2024",
         "variant": "v0_llm_only",
-        "latency_seconds": 8.103,
+        "latency_seconds": 13.528,
         "retrieval_latency_ms": 0,
         "reranking_latency_ms": 0,
-        "generation_latency_ms": 8100.23,
+        "generation_latency_ms": 13526.11,
         "insufficient_evidence": false,
         "numerical_match": false,
-        "error": null
+        "error": "Connection error."
       },
       {
         "id": "q015",
         "question": "How did the revenue growth rate of Microsoft's Productivity and Business Processes segment change from FY2022–FY2023 compared to FY2023–FY2024?",
-        "answer": "To address the question regarding the revenue growth rate of Microsoft's Productivity and Business Processes segment from FY2022 to FY2023 and then from FY2023 to FY2024, we need to look at the reported figures from Microsoft's annual reports and earnings releases.\n\nFor the fiscal year ending June 30, 2022 (FY2022), the revenue for the Productivity and Business Processes segment was approximately $65.1 billion. In the following fiscal year, ending June 30, 2023 (FY2023), this revenue grew to around $70.8 billion. Therefore, the revenue growth rate from FY2022 to FY2023 can be calculated as follows:\n\n\\[ \\text{Growth Rate (FY2022-FY2023)} = \\frac{\\text{Revenue FY2023} - \\text{Revenue FY2022}}{\\text{Revenue FY2022}} \\times 100\\% \\]\n\n\\[ \\text{Growth Rate (FY2022-FY2023)} = \\frac{70.8B - 65.1B}{65.1B} \\times 100\\% \\approx 8.76\\% \\]\n\nMoving on to the next period, for the fiscal year ending June 30, 2024 (FY2024), the revenue for the Productivity and Business Processes segment increased to approximately $75.9 billion. The growth rate from FY2023 to FY2024 would then be:\n\n\\[ \\text{Growth Rate (FY2023-FY2024)} = \\frac{\\text{Revenue FY2024} - \\text{Revenue FY2023}}{\\text{Revenue FY2023}} \\times 100\\% \\]\n\n\\[ \\text{Growth Rate (FY2023-FY2024)} = \\frac{75.9B - 70.8B}{70.8B} \\times 100\\% \\approx 7.20\\% \\]\n\nTherefore, the revenue growth rate of the Productivity and Business Processes segment decreased from approximately 8.76% in FY2022",
+        "answer": "Error calling OpenAI: Connection error.",
         "contexts": [],
         "ground_truth": "Microsoft's Productivity and Business Processes segment grew from approximately $63.4 billion in FY2022 to approximately $69.3 billion in FY2023 (approximately 9.3% growth), then accelerated to $77.7 billion in FY2024 (approximately 12.1% growth). The acceleration in the second period was driven by growth in Microsoft 365 Commercial cloud services, LinkedIn, and early Copilot contributions.",
         "category": "multi_hop_reasoning",
         "source_doc": "msft_10k_fy2024",
         "variant": "v0_llm_only",
-        "latency_seconds": 26.069,
+        "latency_seconds": 13.517,
         "retrieval_latency_ms": 0,
         "reranking_latency_ms": 0,
-        "generation_latency_ms": 26068.0,
+        "generation_latency_ms": 13517.22,
         "insufficient_evidence": false,
         "numerical_match": false,
-        "error": null
+        "error": "Connection error."
       },
       {
         "id": "q016",
         "question": "How did the cumulative revenue growth of Microsoft's three business segments compare over the FY2022 to FY2024 period?",
-        "answer": "To address the cumulative revenue growth of Microsoft's three primary business segments from fiscal year 2022 to fiscal year 2024, we need to consider the Intelligent Cloud, Productivity and Business Processes, and More Personal Computing segments.\n\n1. **Intelligent Cloud**: This segment includes Azure public cloud services, Windows Server, SQL Server, Visual Studio, System Center, and enterprise services. Over the FY2022 to FY2024 period, this segment has been a significant driver of revenue growth for Microsoft due to strong demand for cloud computing services. The revenue growth in this segment has been robust, with Azure leading the way.\n\n2. **Productivity and Business Processes**: This segment encompasses Office products and services, LinkedIn, and Dynamics products and cloud services. While this segment has also grown, its growth rate has generally been slower compared to the Intelligent Cloud segment. The segment benefits from recurring revenue streams from Office 365 subscriptions and Dynamics CRM solutions.\n\n3. **More Personal Computing**: This segment includes Windows licensing, gaming, search advertising, and devices. The growth in this segment can be more variable, influenced by factors such as PC shipments and gaming hardware sales. Historically, this segment has shown moderate growth, with fluctuations based on external market conditions.\n\nBased on publicly available information up to the end of FY2024, the Intelligent Cloud segment would likely show the highest cumulative revenue growth, followed by Productivity and Business Processes, and then More Personal Computing. However, exact figures would require detailed analysis of Microsoft's annual reports and earnings releases for each fiscal year within the specified period. For precise numbers, one would need to refer directly to Microsoft's SEC filings or official financial statements.",
+        "answer": "Error calling OpenAI: Connection error.",
         "contexts": [],
         "ground_truth": "Between FY2022 and FY2024, Intelligent Cloud was the fastest-growing segment with approximately 40% cumulative revenue growth (from $75.3 billion to $105.4 billion), followed by Productivity and Business Processes at approximately 22% (from $63.4 billion to $77.7 billion). More Personal Computing was the slowest, growing approximately 4% (from approximately $59.6 billion to $62.0 billion), reflecting continued pressure on the PC market offset by gaming and search growth.",
         "category": "comparative_analysis",
         "source_doc": "msft_10k_fy2024",
         "variant": "v0_llm_only",
-        "latency_seconds": 17.856,
+        "latency_seconds": 13.382,
         "retrieval_latency_ms": 0,
         "reranking_latency_ms": 0,
-        "generation_latency_ms": 17854.93,
+        "generation_latency_ms": 13381.17,
         "insufficient_evidence": false,
         "numerical_match": false,
-        "error": null
+        "error": "Connection error."
       },
       {
         "id": "q017",
         "question": "How did Microsoft's net income change from FY2023 to FY2024, both in absolute terms and as a margin?",
-        "answer": "Based on Microsoft's publicly available financial reports, the company reported a significant increase in net income from fiscal year 2023 to fiscal year 2024. Specifically, Microsoft's net income increased from approximately $72.7 billion in FY2023 to around $91.8 billion in FY2024. This represents an increase of roughly $19.1 billion in absolute terms.\n\nIn terms of margins, the net income margin also improved. The net income margin was approximately 25% in FY2023, and it increased to around 31% in FY2024. These figures reflect a strong performance across Microsoft's various business segments, including productivity and business processes, intelligent cloud, and more consumer-oriented platforms like personal computing.\n\nPlease note that these figures are based on my training data and may require verification with the latest official filings for precise details.",
+        "answer": "Error calling OpenAI: Connection error.",
         "contexts": [],
         "ground_truth": "Microsoft's net income increased from $72.4 billion in FY2023 to $88.1 billion in FY2024, an increase of approximately $15.7 billion or 22% year-over-year. Net margin improved from approximately 34.2% in FY2023 to approximately 35.9% in FY2024, reflecting operating leverage and the growing contribution of high-margin cloud revenue.",
         "category": "comparative_analysis",
         "source_doc": "msft_10k_fy2024",
         "variant": "v0_llm_only",
-        "latency_seconds": 9.578,
+        "latency_seconds": 13.455,
         "retrieval_latency_ms": 0,
         "reranking_latency_ms": 0,
-        "generation_latency_ms": 9577.81,
+        "generation_latency_ms": 13454.72,
         "insufficient_evidence": false,
         "numerical_match": false,
-        "error": null
+        "error": "Connection error."
       },
       {
         "id": "q018",
         "question": "How did the Intelligent Cloud segment's revenue growth compare to the overall company revenue growth in FY2024?",
-        "answer": "For the fiscal year ending June 30, 2024 (FY2024), the Intelligent Cloud segment's revenue growth compared to the overall company revenue growth would be based on the reported figures from Microsoft's earnings releases and filings. Typically, Microsoft breaks down its financial results into three main segments: Productivity and Business Processes, Intelligent Cloud, and More Personal Computing.\n\nTo accurately compare the revenue growth of the Intelligent Cloud segment to the overall company revenue growth, we would need to look at the specific revenue figures for each segment as well as the consolidated revenue for the entire company. Without having the exact figures from the latest earnings release, I can't provide precise percentages. However, historically, the Intelligent Cloud segment has often shown higher growth rates compared to the overall company due to strong demand for cloud services and Azure, which is a key part of this segment.\n\nFor an exact comparison, one would need to refer to the official Microsoft earnings report for FY2024. The report will contain detailed financial information that can be used to calculate the growth rates and make the comparison.",
+        "answer": "Error calling OpenAI: Connection error.",
         "contexts": [],
         "ground_truth": "In FY2024, the Intelligent Cloud segment grew approximately 19.8% year-over-year (from $87.9 billion to $105.4 billion), outpacing Microsoft's overall company revenue growth of approximately 16% (from $211.9 billion to $245.1 billion). This means the Intelligent Cloud segment grew approximately 3.8 percentage points faster than the company average, further increasing its share of total revenue.",
         "category": "comparative_analysis",
         "source_doc": "msft_10k_fy2024",
         "variant": "v0_llm_only",
-        "latency_seconds": 11.323,
+        "latency_seconds": 13.476,
         "retrieval_latency_ms": 0,
         "reranking_latency_ms": 0,
-        "generation_latency_ms": 11322.36,
+        "generation_latency_ms": 13476.12,
         "insufficient_evidence": false,
         "numerical_match": false,
-        "error": null
+        "error": "Connection error."
       },
       {
         "id": "q019",
         "question": "How did the Intelligent Cloud segment revenue trend from FY2022 to FY2024, and what was the compound growth rate?",
-        "answer": "To address the revenue trend of the Intelligent Cloud segment at Microsoft Corporation from fiscal year 2022 to fiscal year 2024, we can refer to the annual reports and earnings releases provided by the company.\n\nFor fiscal year 2022, which ended June 30, 2022, the Intelligent Cloud segment reported revenue of approximately $75 billion.\n\nIn fiscal year 2023, ending June 30, 2023, the revenue for this segment increased to around $91 billion.\n\nFor fiscal year 2024, ending June 30, 2024, the reported revenue for the Intelligent Cloud segment was approximately $100 billion.\n\nTo calculate the compound annual growth rate (CAGR) over this period, we use the formula:\n\n\\[ CAGR = \\left( \\frac{Ending\\ Value}{Beginning\\ Value} \\right)^{\\frac{1}{n}} - 1 \\]\n\nWhere:\n- Ending Value = $100 billion (FY2024)\n- Beginning Value = $75 billion (FY2022)\n- n = number of years = 2\n\nPlugging in the values:\n\n\\[ CAGR = \\left( \\frac{100}{75} \\right)^{\\frac{1}{2}} - 1 \\]\n\\[ CAGR = \\left( \\frac{4}{3} \\right)^{\\frac{1}{2}} - 1 \\]\n\\[ CAGR \\approx 1.1547 - 1 \\]\n\\[ CAGR \\approx 0.1547 \\text{ or } 15.47\\% \\]\n\nTherefore, the compound annual growth rate for the Intelligent Cloud segment from FY2022 to FY2024 is approximately 15.47%. Please note that these figures are based on the publicly available financial statements and may require verification with the latest filings from Microsoft Corporation.",
+        "answer": "Error calling OpenAI: Connection error.",
         "contexts": [],
         "ground_truth": "The Intelligent Cloud segment revenue grew from approximately $75.3 billion in FY2022 to $87.9 billion in FY2023 and $105.4 billion in FY2024, showing consistent double-digit growth driven by Azure adoption. The two-year compound annual growth rate (CAGR) was approximately 18.3%, well above the company's overall revenue CAGR of approximately 11.2% over the same period.",
         "category": "comparative_analysis",
         "source_doc": "msft_10k_fy2024",
         "variant": "v0_llm_only",
-        "latency_seconds": 21.302,
+        "latency_seconds": 13.363,
         "retrieval_latency_ms": 0,
         "reranking_latency_ms": 0,
-        "generation_latency_ms": 21301.22,
+        "generation_latency_ms": 13362.89,
         "insufficient_evidence": false,
         "numerical_match": false,
-        "error": null
+        "error": "Connection error."
       },
       {
         "id": "q020",
         "question": "Comparing Q1 FY2025 and Q2 FY2025, how did Microsoft's overall revenue growth rate differ from Azure's growth rate, and what does this suggest about segment mix?",
-        "answer": "To address the question regarding the revenue growth rates of Microsoft as a whole and Azure specifically between Q1 FY2025 and Q2 FY2025, we need to rely on the information available from Microsoft's filings and public announcements up to the latest available period before Q1 FY2025. However, since the exact figures for Q1 FY2025 and Q2 FY2025 are not yet available in the public domain as of my last update, I can only provide an analysis based on trends observed in previous quarters and the general structure of Microsoft's financial reporting.\n\nHistorically, Microsoft has reported its earnings quarterly, with Azure being one of the key segments contributing significantly to the company's overall revenue growth. In recent years, Azure has been growing at a faster pace compared to other segments like Productivity and Business Processes (which includes Office and Dynamics) and Intelligent Cloud (which includes Server Products and Services).\n\nIf we were to extrapolate from the trends seen in the past, Azure's revenue growth rate would likely be higher than the overall revenue growth rate of Microsoft. For instance, in Q4 FY2023, Azure's revenue grew by approximately 27%, while Microsoft's total revenue grew by around 18%. This pattern suggests that Azure continues to be a strong driver of growth for Microsoft.\n\nThe difference in growth rates between the overall company and Azure could indicate that while Azure remains a significant contributor to Microsoft's growth, other segments may be experiencing slower growth or even declines in some cases. This could be due to various factors such as competition, market saturation, or shifts in consumer behavior.\n\nFor precise figures and a detailed analysis of the specific quarters mentioned, one would need to refer to the official earnings reports released by Microsoft for those periods. The exact comparison would provide insights into how the mix of Microsoft's business segments is evolving over time.",
+        "answer": "Error calling OpenAI: Connection error.",
         "contexts": [],
         "ground_truth": "In Q1 FY2025, Microsoft's total revenue grew 16% year-over-year while Azure grew approximately 33% in constant currency. In Q2 FY2025, overall revenue growth moderated to approximately 12% while Azure growth decelerated to approximately 31%. In both quarters, Azure grew substantially faster than the company overall, indicating that the Intelligent Cloud segment is the primary growth engine and that its above-average growth is progressively increasing its share of the revenue mix.",
         "category": "comparative_analysis",
         "source_doc": "msft_10q_q2_fy2025",
         "variant": "v0_llm_only",
-        "latency_seconds": 19.501,
+        "latency_seconds": 13.542,
         "retrieval_latency_ms": 0,
         "reranking_latency_ms": 0,
-        "generation_latency_ms": 19499.27,
+        "generation_latency_ms": 13540.31,
         "insufficient_evidence": false,
         "numerical_match": false,
-        "error": null
+        "error": "Connection error."
       }
     ],
     "aggregate": {
-      "avg_latency_seconds": 9.6628,
+      "avg_latency_seconds": 0.0,
       "avg_retrieval_ms": 0.0,
       "avg_reranking_ms": 0.0,
-      "avg_generation_ms": 9662.12,
-      "numerical_accuracy": 0.25,
-      "faithfulness": 0.0,
-      "answer_relevancy": 0.2289,
-      "context_recall": 0.0,
-      "context_precision": 0.0,
-      "category_ragas": {
-        "factual_retrieval": {
-          "faithfulness": 0.0,
-          "answer_relevancy": 0.3773,
-          "context_recall": 0.0,
-          "context_precision": 0.0
-        },
-        "temporal_reasoning": {
-          "faithfulness": 0.0,
-          "answer_relevancy": 0.0,
-          "context_recall": 0.0,
-          "context_precision": 0.0
-        },
-        "multi_hop_reasoning": {
-          "faithfulness": 0.0,
-          "answer_relevancy": 0.1879,
-          "context_recall": 0.0,
-          "context_precision": 0.0
-        },
-        "comparative_analysis": {
-          "faithfulness": NaN,
-          "answer_relevancy": 0.3502,
-          "context_recall": 0.0,
-          "context_precision": 0.0
-        }
-      },
-      "category_retrieval": {
-        "factual_retrieval": {
-          "n": 5,
-          "numerical_accuracy": 0.6,
-          "context_coverage": 0.0
-        },
-        "temporal_reasoning": {
-          "n": 5,
-          "numerical_accuracy": 0.2,
-          "context_coverage": 0.0
-        },
-        "multi_hop_reasoning": {
-          "n": 5,
-          "numerical_accuracy": 0.2,
-          "context_coverage": 0.0
-        },
-        "comparative_analysis": {
-          "n": 5,
-          "numerical_accuracy": 0.0,
-          "context_coverage": 0.0
-        }
-      }
-    },
-    "per_question_ragas": [
-      {
-        "id": "q001",
-        "category": "factual_retrieval",
-        "faithfulness": 0.0,
-        "answer_relevancy": 0.0,
-        "context_recall": 0.0,
-        "context_precision": 0.0
-      },
-      {
-        "id": "q002",
-        "category": "factual_retrieval",
-        "faithfulness": 0.0,
-        "answer_relevancy": 0.0,
-        "context_recall": 0.0,
-        "context_precision": 0.0
-      },
-      {
-        "id": "q003",
-        "category": "factual_retrieval",
-        "faithfulness": 0.0,
-        "answer_relevancy": 0.9315405834981821,
-        "context_recall": 0.0,
-        "context_precision": 0.0
-      },
-      {
-        "id": "q004",
-        "category": "factual_retrieval",
-        "faithfulness": 0.0,
-        "answer_relevancy": 0.9551513621662816,
-        "context_recall": 0.0,
-        "context_precision": 0.0
-      },
-      {
-        "id": "q005",
-        "category": "factual_retrieval",
-        "faithfulness": 0.0,
-        "answer_relevancy": 0.0,
-        "context_recall": 0.0,
-        "context_precision": 0.0
-      },
-      {
-        "id": "q006",
-        "category": "temporal_reasoning",
-        "faithfulness": 0.0,
-        "answer_relevancy": 0.0,
-        "context_recall": 0.0,
-        "context_precision": 0.0
-      },
-      {
-        "id": "q007",
-        "category": "temporal_reasoning",
-        "faithfulness": 0.0,
-        "answer_relevancy": 0.0,
-        "context_recall": 0.0,
-        "context_precision": 0.0
-      },
-      {
-        "id": "q008",
-        "category": "temporal_reasoning",
-        "faithfulness": 0.0,
-        "answer_relevancy": 0.0,
-        "context_recall": 0.0,
-        "context_precision": 0.0
-      },
-      {
-        "id": "q009",
-        "category": "temporal_reasoning",
-        "faithfulness": 0.0,
-        "answer_relevancy": 0.0,
-        "context_recall": 0.0,
-        "context_precision": 0.0
-      },
-      {
-        "id": "q010",
-        "category": "temporal_reasoning",
-        "faithfulness": 0.0,
-        "answer_relevancy": 0.0,
-        "context_recall": 0.0,
-        "context_precision": 0.0
-      },
-      {
-        "id": "q011",
-        "category": "multi_hop_reasoning",
-        "faithfulness": 0.0,
-        "answer_relevancy": 0.0,
-        "context_recall": 0.0,
-        "context_precision": 0.0
-      },
-      {
-        "id": "q012",
-        "category": "multi_hop_reasoning",
-        "faithfulness": 0.0,
-        "answer_relevancy": 0.0,
-        "context_recall": 0.0,
-        "context_precision": 0.0
-      },
-      {
-        "id": "q013",
-        "category": "multi_hop_reasoning",
-        "faithfulness": 0.0,
-        "answer_relevancy": 0.0,
-        "context_recall": 0.0,
-        "context_precision": 0.0
-      },
-      {
-        "id": "q014",
-        "category": "multi_hop_reasoning",
-        "faithfulness": 0.0,
-        "answer_relevancy": 0.0,
-        "context_recall": 0.0,
-        "context_precision": 0.0
-      },
-      {
-        "id": "q015",
-        "category": "multi_hop_reasoning",
-        "faithfulness": 0.0,
-        "answer_relevancy": 0.9392632804745148,
-        "context_recall": 0.0,
-        "context_precision": 0.0
-      },
-      {
-        "id": "q016",
-        "category": "comparative_analysis",
-        "faithfulness": 0.0,
-        "answer_relevancy": 0.9142864496975354,
-        "context_recall": 0.0,
-        "context_precision": 0.0
-      },
-      {
-        "id": "q017",
-        "category": "comparative_analysis",
-        "faithfulness": 0.0,
-        "answer_relevancy": 0.0,
-        "context_recall": 0.0,
-        "context_precision": 0.0
-      },
-      {
-        "id": "q018",
-        "category": "comparative_analysis",
-        "faithfulness": 0.0,
-        "answer_relevancy": 0.0,
-        "context_recall": 0.0,
-        "context_precision": 0.0
-      },
-      {
-        "id": "q019",
-        "category": "comparative_analysis",
-        "faithfulness": 0.0,
-        "answer_relevancy": 0.8369512058777108,
-        "context_recall": 0.0,
-        "context_precision": 0.0
-      },
-      {
-        "id": "q020",
-        "category": "comparative_analysis",
-        "faithfulness": NaN,
-        "answer_relevancy": 0.0,
-        "context_recall": 0.0,
-        "context_precision": 0.0
-      }
-    ]
+      "avg_generation_ms": 0.0,
+      "numerical_accuracy": 0.0
+    }
   },
   "v3_advanced_b": {
     "per_question": [
