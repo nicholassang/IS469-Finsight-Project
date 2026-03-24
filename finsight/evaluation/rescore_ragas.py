@@ -9,22 +9,28 @@ If OPENAI_API_KEY is set (in .env or environment), uses gpt-4o-mini as the
 judge LLM — much more stable than the local vLLM for 80 sequential calls.
 Falls back to local vLLM if no API key is found.
 
+Also back-fills numerical_accuracy and category_retrieval metrics from
+per-question results so the comparison table is complete.
+
 Usage:
     python evaluation/rescore_ragas.py
-    python evaluation/rescore_ragas.py --input evaluation/results/eval_results_improved_v2.json
-    python evaluation/rescore_ragas.py --input evaluation/results/eval_results_improved_v2.json --output evaluation/results/eval_results_final.json
+    python evaluation/rescore_ragas.py --input evaluation/results/eval_results.json
+    python evaluation/rescore_ragas.py --input evaluation/results/eval_results.json --output evaluation/results/eval_results_rescored.json
+    python evaluation/rescore_ragas.py --skip-ragas   # back-fill only numerical/category metrics
 """
 import sys
 import os
 import json
 import argparse
 from pathlib import Path
+from collections import defaultdict
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.utils.config_loader import load_config
 from src.utils.logger import get_logger
+from evaluation.metrics import compute_numeric_match
 
 logger = get_logger(__name__)
 
@@ -147,19 +153,73 @@ def compute_ragas_metrics_stable(results: list, cfg: dict) -> dict:
                 "context_recall": 0.0, "context_precision": 0.0}
 
 
+def backfill_numerical_accuracy(per_question: list) -> tuple:
+    """
+    Back-fill numerical_match into per-question records (if absent) and
+    compute aggregate numerical_accuracy + category_retrieval breakdown.
+
+    Returns (updated_per_question, numerical_accuracy, category_retrieval).
+    """
+    CATEGORIES = ["factual_retrieval", "temporal_reasoning",
+                  "multi_hop_reasoning", "comparative_analysis"]
+
+    cat_data = defaultdict(lambda: {"num_match": [], "has_context": []})
+
+    for r in per_question:
+        if r.get("error"):
+            continue
+        # Back-fill numerical_match if missing
+        if "numerical_match" not in r:
+            r["numerical_match"] = compute_numeric_match(
+                r.get("answer", ""), r.get("ground_truth", "")
+            )
+        cat = r.get("category", "unknown")
+        cat_data[cat]["num_match"].append(int(r["numerical_match"]))
+        cat_data[cat]["has_context"].append(int(len(r.get("contexts", [])) > 0))
+
+    valid = [r for r in per_question if not r.get("error")]
+    n_valid = max(len(valid), 1)
+    numerical_accuracy = round(
+        sum(1 for r in valid if r.get("numerical_match")) / n_valid, 4
+    )
+
+    category_retrieval = {}
+    for cat in CATEGORIES:
+        data = cat_data.get(cat, {"num_match": [], "has_context": []})
+        n = len(data["num_match"])
+        category_retrieval[cat] = {
+            "n": n,
+            "numerical_accuracy": round(sum(data["num_match"]) / n, 4) if n else 0.0,
+            "context_coverage": round(sum(data["has_context"]) / n, 4) if n else 0.0,
+        }
+
+    return per_question, numerical_accuracy, category_retrieval
+
+
 def main():
     _load_env()
 
     parser = argparse.ArgumentParser(description="Re-score RAGAS metrics on saved results")
     parser.add_argument(
         "--input",
-        default="evaluation/results/eval_results_improved_v2.json",
+        default="evaluation/results/eval_results.json",
         help="Path to the saved Q&A results JSON file",
     )
     parser.add_argument(
         "--output",
         default=None,
         help="Path to save scored results (default: overwrites input file)",
+    )
+    parser.add_argument(
+        "--skip-ragas",
+        action="store_true",
+        help="Skip RAGAS re-scoring; only back-fill numerical_accuracy and category_retrieval.",
+    )
+    parser.add_argument(
+        "--variants",
+        nargs="+",
+        default=None,
+        help="Subset of variants to re-score (default: all in file)",
     )
     args = parser.parse_args()
 
@@ -174,40 +234,129 @@ def main():
     with open(input_path) as f:
         all_results = json.load(f)
 
-    for mode in all_results:
-        logger.info(f"Re-scoring RAGAS metrics for mode: {mode} ...")
+    variants = args.variants or list(all_results.keys())
+
+    for mode in variants:
+        if mode not in all_results:
+            logger.warning(f"Variant {mode} not found in results file; skipping.")
+            continue
+
+        logger.info(f"\nProcessing variant: {mode} ...")
         per_question = all_results[mode]["per_question"]
-        ragas_scores = compute_ragas_metrics_stable(per_question, cfg)
 
-        latencies = [r["latency_seconds"] for r in per_question if not r.get("error")]
-        avg_latency = sum(latencies) / max(len(latencies), 1)
+        # ── Back-fill numerical accuracy (always) ────────────────────────
+        per_question, numerical_accuracy, category_retrieval = backfill_numerical_accuracy(
+            per_question
+        )
+        all_results[mode]["per_question"] = per_question
 
+        valid = [r for r in per_question if not r.get("error")]
+        latencies = [r["latency_seconds"] for r in valid]
+        avg_latency = round(sum(latencies) / max(len(latencies), 1), 4)
+        avg_retrieval = round(
+            sum(r.get("retrieval_latency_ms", 0) for r in valid) / max(len(valid), 1), 2
+        )
+        avg_reranking = round(
+            sum(r.get("reranking_latency_ms", 0) for r in valid) / max(len(valid), 1), 2
+        )
+        avg_generation = round(
+            sum(r.get("generation_latency_ms", 0) for r in valid) / max(len(valid), 1), 2
+        )
+
+        # Preserve existing RAGAS scores
+        existing_agg = all_results[mode].get("aggregate", {})
         all_results[mode]["aggregate"] = {
-            **ragas_scores,
-            "avg_latency_seconds": round(avg_latency, 4),
+            **existing_agg,
+            "numerical_accuracy": numerical_accuracy,
+            "avg_latency_seconds": avg_latency,
+            "avg_retrieval_ms": avg_retrieval,
+            "avg_reranking_ms": avg_reranking,
+            "avg_generation_ms": avg_generation,
+            "category_retrieval": category_retrieval,
         }
-        logger.info(f"  {mode}: {json.dumps(ragas_scores)}")
+
+        logger.info(
+            f"  numerical_accuracy={numerical_accuracy:.4f}, "
+            f"n_valid={len(valid)}/{len(per_question)}"
+        )
+        for cat, stats in category_retrieval.items():
+            if stats["n"] > 0:
+                logger.info(
+                    f"    {cat}: n={stats['n']}, "
+                    f"num_acc={stats['numerical_accuracy']:.2%}, "
+                    f"ctx_cov={stats['context_coverage']:.2%}"
+                )
+
+        if args.skip_ragas:
+            continue
+
+        # ── Re-compute RAGAS scores ──────────────────────────────────────
+        logger.info(f"  Re-scoring RAGAS for {mode} ({len(valid)} valid results)...")
+        ragas_scores = compute_ragas_metrics_stable(per_question, cfg)
+        all_results[mode]["aggregate"].update(ragas_scores)
+        logger.info(f"  RAGAS: {json.dumps(ragas_scores)}")
 
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(all_results, f, indent=2, ensure_ascii=False)
-    logger.info(f"Scored results saved to {output_path}")
+    logger.info(f"\nResults saved to {output_path}")
 
-    # Print summary table
-    modes = list(all_results.keys())
-    metrics_keys = ["faithfulness", "answer_relevancy", "context_recall",
-                    "context_precision", "avg_latency_seconds"]
-    header = f"{'Metric':<25}" + "".join(f" | {m:>12}" for m in modes)
-    print("\n" + "=" * (25 + 15 * len(modes)))
-    print("  RAGAS EVALUATION RESULTS — FinSight")
-    print("=" * (25 + 15 * len(modes)))
+    # ── Print summary table ──────────────────────────────────────────────
+    VARIANT_ORDER = [
+        "v0_llm_only", "v1_baseline", "v2_advanced_a", "v3_advanced_b",
+        "v4_advanced_c", "v5_advanced_d", "v6_advanced_e",
+    ]
+    modes = [v for v in VARIANT_ORDER if v in all_results] + \
+            [v for v in all_results if v not in VARIANT_ORDER]
+
+    metrics_keys = [
+        "faithfulness", "answer_relevancy", "context_recall", "context_precision",
+        "numerical_accuracy", "avg_latency_seconds",
+        "avg_retrieval_ms", "avg_reranking_ms", "avg_generation_ms",
+    ]
+    col_w = 14
+    header = f"{'Metric':<28}" + "".join(f" | {m:>{col_w}}" for m in modes)
+    sep = "=" * (28 + (col_w + 3) * len(modes))
+    print(f"\n{sep}")
+    print("  RAGAS EVALUATION RESULTS — FinSight (Outline §6.2)")
+    print(sep)
     print(header)
-    print("-" * (25 + 15 * len(modes)))
+    print("-" * len(sep))
     for k in metrics_keys:
-        row = f"{k:<25}"
+        row = f"{k:<28}"
         for m in modes:
-            row += f" | {all_results[m]['aggregate'].get(k, 0):>12.4f}"
+            val = all_results[m]["aggregate"].get(k)
+            if val is None:
+                row += f" | {'N/A':>{col_w}}"
+            elif k.endswith("_ms"):
+                row += f" | {val:>{col_w}.0f}"
+            else:
+                row += f" | {val:>{col_w}.4f}"
         print(row)
-    print("=" * (25 + 15 * len(modes)))
+    print("-" * len(sep))
+    row = f"{'n_questions':<28}"
+    for m in modes:
+        row += f" | {len(all_results[m]['per_question']):>{col_w}}"
+    print(row)
+    print(sep)
+
+    # ── Per-category numerical accuracy ──────────────────────────────────
+    CATEGORIES = ["factual_retrieval", "temporal_reasoning",
+                  "multi_hop_reasoning", "comparative_analysis"]
+    print(f"\n{sep}")
+    print("  NUMERICAL ACCURACY BY QUERY CATEGORY (Outline §10.3)")
+    print(sep)
+    cat_hdr = f"  {'Category':<24}" + "".join(f" | {m:>{col_w}}" for m in modes)
+    print(cat_hdr)
+    print("-" * len(sep))
+    for cat in CATEGORIES:
+        row = f"  {cat:<24}"
+        for m in modes:
+            acc = all_results[m]["aggregate"].get(
+                "category_retrieval", {}
+            ).get(cat, {}).get("numerical_accuracy", 0.0)
+            row += f" | {acc:>{col_w}.1%}"
+        print(row)
+    print(sep)
 
 
 if __name__ == "__main__":

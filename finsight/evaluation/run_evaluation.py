@@ -33,6 +33,7 @@ import chromadb_compat  # noqa: F401  — must precede any chromadb/pipeline imp
 
 from src.utils.config_loader import load_config
 from src.utils.logger import get_logger
+from evaluation.metrics import compute_numeric_match
 
 logger = get_logger(__name__)
 
@@ -87,10 +88,13 @@ def run_questions(pipeline, dataset: list, variant_key: str) -> list:
                 c.get("text", "") for c in result.get("retrieved_chunks", [])
             ]
 
+            answer = result.get("answer", "")
+            num_match = compute_numeric_match(answer, ground_truth)
+
             results.append({
                 "id": item["id"],
                 "question": question,
-                "answer": result.get("answer", ""),
+                "answer": answer,
                 "contexts": contexts,
                 "ground_truth": ground_truth,
                 "category": category,
@@ -101,9 +105,10 @@ def run_questions(pipeline, dataset: list, variant_key: str) -> list:
                 "reranking_latency_ms": result.get("reranking_latency_ms", 0),
                 "generation_latency_ms": result.get("generation_latency_ms", 0),
                 "insufficient_evidence": result.get("insufficient_evidence", False),
+                "numerical_match": num_match,
                 "error": result.get("error"),
             })
-            logger.info(f"    -> {latency_s:.1f}s | answered")
+            logger.info(f"    -> {latency_s:.1f}s | num_match={num_match}")
         except Exception as e:
             latency_s = time.time() - t0
             logger.error(f"    -> ERROR: {e}")
@@ -121,6 +126,7 @@ def run_questions(pipeline, dataset: list, variant_key: str) -> list:
                 "reranking_latency_ms": 0,
                 "generation_latency_ms": 0,
                 "insufficient_evidence": False,
+                "numerical_match": False,
                 "error": str(e),
             })
 
@@ -260,6 +266,36 @@ def compute_ragas_metrics(results: list, cfg: dict) -> dict:
     return scores
 
 
+def compute_category_retrieval(per_question: list) -> dict:
+    """
+    Break down numerical accuracy, hit rate proxy, and numerical match
+    by query category (outline §10.3 table 5 — By Query Type).
+
+    Returns dict: category -> { numerical_accuracy, n }
+    """
+    CATEGORIES = ["factual_retrieval", "temporal_reasoning",
+                  "multi_hop_reasoning", "comparative_analysis"]
+
+    cat_data = defaultdict(lambda: {"num_match": [], "has_context": []})
+    for r in per_question:
+        if r.get("error"):
+            continue
+        cat = r.get("category", "unknown")
+        cat_data[cat]["num_match"].append(int(r.get("numerical_match", False)))
+        cat_data[cat]["has_context"].append(int(len(r.get("contexts", [])) > 0))
+
+    result = {}
+    for cat in CATEGORIES:
+        data = cat_data.get(cat, {"num_match": [], "has_context": []})
+        n = len(data["num_match"])
+        result[cat] = {
+            "n": n,
+            "numerical_accuracy": round(sum(data["num_match"]) / n, 4) if n else 0.0,
+            "context_coverage": round(sum(data["has_context"]) / n, 4) if n else 0.0,
+        }
+    return result
+
+
 def compute_category_ragas(per_question_ragas: list) -> dict:
     """
     Break down RAGAS scores by query category (outline §6.3).
@@ -290,7 +326,8 @@ def print_comparison_table(all_results: dict):
     variants = [v for v in VARIANT_ORDER if v in all_results]
     metrics_keys = [
         "faithfulness", "answer_relevancy", "context_recall",
-        "context_precision", "avg_latency_seconds",
+        "context_precision", "numerical_accuracy",
+        "avg_latency_seconds",
         "avg_retrieval_ms", "avg_reranking_ms", "avg_generation_ms",
     ]
 
@@ -326,7 +363,7 @@ def print_comparison_table(all_results: dict):
     print(row)
     print(sep)
 
-    # ── Category breakdown (§6.3) ─────────────────────────────────────────
+    # ── Category RAGAS breakdown (§6.3) ──────────────────────────────────
     for v in variants:
         cat_ragas = all_results[v]["aggregate"].get("category_ragas")
         if cat_ragas:
@@ -346,6 +383,25 @@ def print_comparison_table(all_results: dict):
                     f"{scores.get('context_recall', 0):>8.3f}"
                     f"{scores.get('context_precision', 0):>8.3f}"
                 )
+
+    # ── Per-category numerical accuracy breakdown (§10.3 table 5) ────────
+    print(f"\n{sep}")
+    print("  NUMERICAL ACCURACY BY QUERY CATEGORY (Outline §10.3)")
+    print(sep)
+    cat_header2 = f"  {'Category':<24}"
+    for v in variants:
+        cat_header2 += f" | {v:>{col_w}}"
+    print(cat_header2)
+    print("-" * len(sep))
+    for cat in ["factual_retrieval", "temporal_reasoning",
+                "multi_hop_reasoning", "comparative_analysis"]:
+        row = f"  {cat:<24}"
+        for v in variants:
+            cat_ret = all_results[v]["aggregate"].get("category_retrieval", {})
+            acc = cat_ret.get(cat, {}).get("numerical_accuracy", 0.0)
+            row += f" | {acc:>{col_w}.1%}"
+        print(row)
+    print(sep)
 
 
 def main():
@@ -415,6 +471,7 @@ def main():
         avg_retrieval = sum(r.get("retrieval_latency_ms", 0) for r in valid) / n_valid
         avg_reranking = sum(r.get("reranking_latency_ms", 0) for r in valid) / n_valid
         avg_generation = sum(r.get("generation_latency_ms", 0) for r in valid) / n_valid
+        numerical_accuracy = sum(1 for r in valid if r.get("numerical_match")) / n_valid
 
         # Save Q&A results immediately so they are not lost if RAGAS crashes.
         all_results[variant_key] = {
@@ -424,6 +481,7 @@ def main():
                 "avg_retrieval_ms": round(avg_retrieval, 2),
                 "avg_reranking_ms": round(avg_reranking, 2),
                 "avg_generation_ms": round(avg_generation, 2),
+                "numerical_accuracy": round(numerical_accuracy, 4),
             },
         }
         output_path = PROJECT_ROOT / args.output
@@ -443,8 +501,12 @@ def main():
         per_q_ragas = ragas_scores.pop("per_question_ragas", [])
         category_ragas = compute_category_ragas(per_q_ragas) if per_q_ragas else {}
 
+        # Per-category retrieval / numerical accuracy breakdown (§10.3 table 5)
+        category_retrieval = compute_category_retrieval(per_question)
+
         all_results[variant_key]["aggregate"].update(ragas_scores)
         all_results[variant_key]["aggregate"]["category_ragas"] = category_ragas
+        all_results[variant_key]["aggregate"]["category_retrieval"] = category_retrieval
         all_results[variant_key]["per_question_ragas"] = per_q_ragas
 
         logger.info(
