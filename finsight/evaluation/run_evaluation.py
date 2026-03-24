@@ -170,7 +170,7 @@ def compute_ragas_metrics(results: list, cfg: dict) -> dict:
             base_url=base_url,
             api_key=api_key,
             temperature=0.0,
-            max_tokens=512,
+            max_tokens=1024,  # 512 causes LLMDidNotFinishException on RAGAS judge prompts
             timeout=timeout_s,
         )
     )
@@ -392,7 +392,14 @@ def main():
         dataset = dataset[: args.limit]
         logger.info(f"Limited to {len(dataset)} questions")
 
-    all_results = {}
+    # Load existing results to merge with (instead of overwriting)
+    output_path = PROJECT_ROOT / args.output
+    if output_path.exists():
+        with open(output_path, "r", encoding="utf-8") as f:
+            all_results = json.load(f)
+        logger.info(f"Loaded existing results with {len(all_results)} variants")
+    else:
+        all_results = {}
 
     for variant_key in args.variants:
         logger.info(f"\n{'=' * 60}")
