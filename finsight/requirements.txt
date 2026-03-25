@@ -9,7 +9,7 @@ tqdm==4.66.4
 
 # ── Data ingestion ─────────────────────────────────────────────────────────────
 pdfplumber==0.11.0
-PyMuPDF==1.24.3          # fitz fallback parser
+# PyMuPDF==1.24.3          # fitz fallback parser
 requests==2.32.3         # PDF downloader
 tiktoken==0.7.0          # token counting
 

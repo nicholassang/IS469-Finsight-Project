@@ -231,7 +231,7 @@ def main():
         logger.error(f"Results file not found: {input_path}")
         sys.exit(1)
 
-    with open(input_path) as f:
+    with open(input_path, "r", encoding="utf-8") as f:
         all_results = json.load(f)
 
     variants = args.variants or list(all_results.keys())
