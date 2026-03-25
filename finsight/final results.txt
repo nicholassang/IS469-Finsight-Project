@@ -1,0 +1,67 @@
+  Category RAGAS — v0_llm_only
+  Category                   Faith   Relev   C.Rec  C.Prec
+  --------------------------------------------------------
+  factual_retrieval          0.143   0.190   0.000   0.000
+  temporal_reasoning         0.000   0.000   0.000   0.000
+  multi_hop_reasoning        0.000   0.521   0.000   0.000
+  comparative_analysis       0.360   0.534   0.000   0.000
+
+  Category RAGAS — v1_baseline
+  Category                   Faith   Relev   C.Rec  C.Prec
+  --------------------------------------------------------
+  factual_retrieval          0.789   0.978   0.633   0.549
+  temporal_reasoning         1.000   0.387   0.600   0.482
+  multi_hop_reasoning          nan   0.356   0.433   0.637
+  comparative_analysis       0.824   0.199   0.567   0.724
+
+  Category RAGAS — v2_advanced_a
+  Category                   Faith   Relev   C.Rec  C.Prec
+  --------------------------------------------------------
+  factual_retrieval          0.833   0.989   0.500   0.542
+  temporal_reasoning         0.933   0.386   0.400   0.770
+  multi_hop_reasoning        0.938   0.359   0.333   0.812
+  comparative_analysis       0.830   0.188   0.500   0.815
+
+  Category RAGAS — v3_advanced_b
+  Category                   Faith   Relev   C.Rec  C.Prec
+  --------------------------------------------------------
+  factual_retrieval          0.633   0.988   0.400   0.505
+  temporal_reasoning         0.835   0.584   0.800   0.686
+  multi_hop_reasoning          nan   0.551   0.267   0.795
+  comparative_analysis       0.822   0.892   0.350   0.848
+
+  Category RAGAS — v4_advanced_c
+  Category                   Faith   Relev   C.Rec  C.Prec
+  --------------------------------------------------------
+  factual_retrieval          0.600   0.989   0.667   0.474
+  temporal_reasoning         0.541   0.398   0.600   0.727
+  multi_hop_reasoning          nan   0.706   0.600   0.752
+  comparative_analysis         nan   0.713   0.450   0.861
+
+  Category RAGAS — v5_advanced_d
+  Category                   Faith   Relev   C.Rec  C.Prec
+  --------------------------------------------------------
+  factual_retrieval          0.733   0.978   0.767   0.593
+  temporal_reasoning         1.000   0.387   0.400   0.482
+  multi_hop_reasoning          nan   0.355   0.733   0.627
+  comparative_analysis       0.724   0.197   0.467   0.713
+
+  Category RAGAS — v6_advanced_e
+  Category                   Faith   Relev   C.Rec  C.Prec
+  --------------------------------------------------------
+  factual_retrieval          0.686   0.788   0.600   0.539
+  temporal_reasoning         0.839   0.549   0.600   0.454
+  multi_hop_reasoning          nan   0.736   0.267   0.654
+  comparative_analysis       0.699   0.872   0.300   0.755
+
+==================================================================================================================
+  NUMERICAL ACCURACY BY QUERY CATEGORY (Outline §10.3)
+==================================================================================================================
+
+  Category                 |    v0_llm_only |    v1_baseline |  v2_advanced_a |  v3_advanced_b |  v4_advanced_c |  v5_advanced_d |  v6_advanced_e
+---------------------------------------------------------------------------------------------------------------------------------------------------
+  factual_retrieval        |          40.0% |          20.0% |          40.0% |          60.0% |          60.0% |          20.0% |          60.0%
+  temporal_reasoning       |          20.0% |          80.0% |          60.0% |          80.0% |          60.0% |          80.0% |          60.0%
+  multi_hop_reasoning      |          20.0% |          20.0% |          40.0% |          40.0% |          20.0% |           0.0% |          40.0%
+  comparative_analysis     |          20.0% |          40.0% |          40.0% |          40.0% |          80.0% |          40.0% |          60.0%
+==================================================================================================================
