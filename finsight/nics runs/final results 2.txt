@@ -1,0 +1,66 @@
+  Category RAGAS — v0_llm_only
+  Category                   Faith   Relev   C.Rec  C.Prec
+  --------------------------------------------------------
+  factual_retrieval          0.000   0.378   0.000   0.000
+  temporal_reasoning         0.187   0.000   0.000   0.000
+  multi_hop_reasoning        0.000   0.521   0.000   0.000
+  comparative_analysis         nan   0.541   0.000   0.000
+
+  Category RAGAS — v1_baseline
+  Category                   Faith   Relev   C.Rec  C.Prec
+  --------------------------------------------------------
+  factual_retrieval          0.733   0.988   0.667   0.593
+  temporal_reasoning         1.000   0.387   0.400   0.482
+  multi_hop_reasoning          nan   0.357   0.733   0.630
+  comparative_analysis       0.706   0.199   0.567   0.722
+
+  Category RAGAS — v2_advanced_a
+  Category                   Faith   Relev   C.Rec  C.Prec
+  --------------------------------------------------------
+  factual_retrieval          0.667   0.988   0.533     nan
+  temporal_reasoning         1.000   0.387   0.400     nan
+  multi_hop_reasoning        0.843   0.347   0.133   0.807
+  comparative_analysis       0.863   0.189   0.400   0.791
+
+  Category RAGAS — v3_advanced_b
+  Category                   Faith   Relev   C.Rec  C.Prec
+  --------------------------------------------------------
+  factual_retrieval          0.633   0.984   0.400   0.497
+  temporal_reasoning         0.861   0.585   0.300   0.686
+  multi_hop_reasoning        0.817   0.547   0.000   0.792
+  comparative_analysis         nan   0.726   0.300   0.848
+
+  Category RAGAS — v4_advanced_c
+  Category                   Faith   Relev   C.Rec  C.Prec
+  --------------------------------------------------------
+  factual_retrieval          0.700   0.988   0.600   0.482
+  temporal_reasoning         0.561   0.555   0.200   0.676
+  multi_hop_reasoning          nan   0.725   0.600   0.742
+  comparative_analysis         nan   0.867   0.450   0.843
+
+  Category RAGAS — v5_advanced_d
+  Category                   Faith   Relev   C.Rec  C.Prec
+  --------------------------------------------------------
+  factual_retrieval          0.700   0.988   0.633   0.549
+  temporal_reasoning         1.000   0.387   0.400   0.491
+  multi_hop_reasoning          nan   0.357   0.667   0.645
+  comparative_analysis       0.920   0.199   0.367   0.724
+
+  Category RAGAS — v6_advanced_e
+  Category                   Faith   Relev   C.Rec  C.Prec
+  --------------------------------------------------------
+  factual_retrieval          0.714   0.788   0.600   0.510
+  temporal_reasoning         0.762   0.551   0.600   0.404
+  multi_hop_reasoning        0.730   0.729   0.133   0.628
+  comparative_analysis         nan   0.884   0.200   0.755
+
+===================================================================================================================================================
+  NUMERICAL ACCURACY BY QUERY CATEGORY (Outline §10.3)
+===================================================================================================================================================
+  Category                 |    v0_llm_only |    v1_baseline |  v2_advanced_a |  v3_advanced_b |  v4_advanced_c |  v5_advanced_d |  v6_advanced_e
+---------------------------------------------------------------------------------------------------------------------------------------------------
+  factual_retrieval        |          40.0% |          20.0% |          40.0% |          60.0% |          40.0% |           0.0% |          60.0%
+  temporal_reasoning       |          20.0% |          80.0% |          60.0% |          80.0% |          80.0% |          80.0% |          60.0%
+  multi_hop_reasoning      |          20.0% |           0.0% |          40.0% |          40.0% |           0.0% |           0.0% |          40.0%
+  comparative_analysis     |          20.0% |          40.0% |          40.0% |          60.0% |          80.0% |          40.0% |          60.0%
+===================================================================================================================================================
