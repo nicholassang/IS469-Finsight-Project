@@ -207,6 +207,42 @@ Edit `config/settings.yaml` to change:
 | **Model & App Lead** | Embeddings, reranker, generation, citation, Streamlit app |
 | **Evaluation & Report Lead** | Benchmark, RAGAS metrics, GPT-judge, qualitative analysis, report |
 
+### Individual Contributions
+
+**Data & Retrieval Lead**
+- Designed and implemented the PDF ingestion pipeline (`src/ingestion/`) including parsing, cleaning, and fiscal metadata tagging
+- Built fixed-size and semantic chunking strategies (`src/chunking/`)
+- Implemented ChromaDB dense indexer and BM25 sparse indexer (`src/indexing/`)
+- Implemented dense retriever, sparse retriever, and hybrid retriever with RRF fusion (`src/retrieval/`)
+- Built metadata-filtering retriever for V5 (`src/retrieval/verified_retriever.py`)
+- Ran ingestion pipeline on cluster; generated `data/processed/` JSON files and BM25/Chroma indexes
+
+*Contributions of other members observed: Model & App Lead integrated the retrieval modules into end-to-end pipelines and resolved ChromaDB SQLite compatibility issues. Evaluation & Report Lead used the retrieval logs in `indexes/retrieval_logs/` to compute per-stage latency breakdowns in the evaluation.*
+
+---
+
+**Model & App Lead**
+- Integrated embedding model (`sentence-transformers/all-mpnet-base-v2`) into the indexing and retrieval pipeline
+- Implemented cross-encoder reranker (`src/retrieval/reranker.py`) using `ms-marco-MiniLM-L-6-v2`
+- Implemented LLM generator with citation formatting and guardrail logic (`src/generation/`)
+- Built all six advanced pipeline variants (V1–V6) in `src/pipeline/`
+- Developed the Streamlit application (`app/streamlit_app.py`)
+- Set up vLLM server on the cluster (`cluster/serve_vllm.sh`) and resolved ChromaDB compatibility (`chromadb_compat.py`)
+
+*Contributions of other members observed: Data & Retrieval Lead provided chunked JSON files and index artifacts that the pipelines depend on. Evaluation & Report Lead identified the V3 generation regression during evaluation and raised it as a bug, which was traced to RRF ranking of percentage-change chunks over absolute-value chunks.*
+
+---
+
+**Evaluation & Report Lead**
+- Designed the 20-question benchmark dataset across four query categories (`evaluation/eval_dataset.json`)
+- Implemented RAGAS evaluation runner with multi-variant support (`evaluation/run_evaluation.py`)
+- Implemented numerical accuracy metric and category-level breakdown (`evaluation/metrics.py`)
+- Built ablation study and category analysis scripts (`evaluation/ablation_study.py`, `evaluation/category_analysis.py`)
+- Ran full evaluation across all 7 variants on the cluster and committed results (`evaluation/results/eval_results.json`)
+- Authored the full project report (`REPORT.md`) including all tables, case studies, and analysis
+
+*Contributions of other members observed: Data & Retrieval Lead's metadata tagging enabled the per-category retrieval analysis. Model & App Lead's pipeline implementations produced the diverse results that made the comparative analysis meaningful.*
+
 ---
 
 ## License

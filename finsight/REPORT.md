@@ -16,8 +16,9 @@
 6. [Qualitative Error Analysis](#6-qualitative-error-analysis)
 7. [Discussion & Insights](#7-discussion--insights)
 8. [Limitations & Future Work](#8-limitations--future-work)
-9. [Conclusion](#9-conclusion)
-10. [Appendix](#10-appendix)
+9. [Risks and Guardrails](#9-risks-and-guardrails)
+10. [Conclusion](#10-conclusion)
+11. [Appendix](#11-appendix)
 
 ---
 
@@ -383,55 +384,79 @@ Following the framework defined in the outline (§6.4):
 
 ### 6.3 Case Studies
 
-#### Case 1: Retrieval Failure — Wrong Quarter Data
-
-**Question:** "What was Microsoft's revenue in Q2 FY2025?"
-
-**Expected:** $69.6 billion (December 2024 quarter)
-
-**V1 Answer:** "$62,020 million" — retrieved the More Personal Computing segment figure from FY2024 rather than total Q2 FY2025 revenue.
-
-**Root Cause:** Dense embeddings for "revenue Q2 FY2025" and "FY2024 segment revenue" are semantically close. Without BM25's lexical anchoring on "Q2 FY2025", the wrong document section is retrieved.
-
-**Which variant fixes it:** V3/V4 — BM25 forces matching on the exact fiscal period string, surfacing the correct quarterly filing.
+All answers below are taken verbatim from `evaluation/results/eval_results.json`.
 
 ---
 
-#### Case 2: Retrieval Failure — False Insufficient Evidence
+#### Case 1: Hallucination Without Retrieval — V0 vs V1 (q001)
 
-**Question:** "What was the Intelligent Cloud segment revenue in Q1 FY2025?"
+**Question:** "What was Microsoft's gross profit and gross margin percentage for FY2024?"
 
-**Expected:** Approximately $24.1 billion
+**Ground truth:** Gross profit $171.0B on revenue of $245.1B → gross margin ≈ 69.8%.
 
-**V1 Answer:** "The provided documents do not contain sufficient information."
+**V0 (LLM-Only) actual answer:**
+> "As of my last training cut-off in October 2023, I do not have the specific figures for Microsoft's gross profit and gross margin percentage for FY2024 … For FY2023, Microsoft's gross profit was approximately $83 billion, with a gross margin percentage around 68%."
 
-**Root Cause:** 10 context chunks were retrieved but the segment breakdown for Q1 FY2025 was ranked below position 10. The guardrail correctly refused to hallucinate, but the answer was wrong due to ranking, not retrieval.
+**V1 (Baseline) actual answer:**
+> "For FY2024, Microsoft's total revenue was $245,122 million, and the total cost of revenue was $74,114 million. Gross Profit = $245,122M − $74,114M = $171,008 million. Gross Margin Percentage ≈ 69.7% [Doc-3]."
 
-**Which variant fixes it:** V2/V3 — cross-encoder reranking re-scores query–chunk pairs directly, promoting the Q1 FY2025 segment breakdown above general annual results.
+**Assessment:** V0 is wrong by 2× — it confabulates FY2023 figures (~$83B) rather than FY2024 ($171B) because the model's training data predates the filing. V1 retrieves the income statement directly and computes correctly. This is the clearest demonstration of why retrieval is non-negotiable.
 
----
-
-#### Case 3: Query Understanding Failure — Ambiguous Temporal Reference
-
-**Question:** "How did Microsoft's operating margin change from FY2022 to FY2024?"
-
-**V1 behaviour:** Retrieves FY2024 operating income but fails to surface FY2022 operating income in the same context window, producing a partial answer.
-
-**Root Cause:** The query references two fiscal years simultaneously. Dense retrieval on the full query tends to return results matching the more recent period (FY2024), underweighting FY2022 content.
-
-**Which variant fixes it:** V4 — query rewriting decomposes the question into separate fiscal period sub-queries, then merges the retrieval sets before generation.
+**Failure type:** Generation failure (training-data hallucination) in V0. Fixed entirely by basic dense retrieval (V1).
 
 ---
 
-#### Case 4: Chunking Failure — Table Split Across Boundaries
+#### Case 2: Temporal Retrieval Failure — V1 vs V3 (q006)
 
-**Question:** "What was Microsoft's gross profit margin for FY2024?"
+**Question:** "Did Azure's constant-currency growth rate accelerate or decelerate from Q1 FY2025 to Q2 FY2025, and by how much?"
 
-**Observed:** Some variants retrieve chunks containing either gross profit or total revenue but not both, forcing the LLM to reason from partial data or produce a generation failure.
+**Ground truth:** Decelerated from 33% (Q1 FY2025) to 31% (Q2 FY2025) — a 2 pp decrease.
 
-**Root Cause:** Financial income statement tables are dense and often exceed the 500–800 token chunk boundary, splitting numerator and denominator into separate chunks.
+**V1 (Baseline) actual answer:**
+> "The provided context does not contain data specifically for Q2 FY2025. The context includes Q1 FY2025 data which shows that Azure and other cloud services revenue grew 33% … There is no information available regarding Azure's growth rate for Q2 FY2025."
 
-**Which variant partially fixes it:** V6 — context compression distils the relevant numerical content from multiple chunks, partially mitigating the split-table problem.
+**V3 (Hybrid) actual answer:**
+> "Q1 FY2025: Azure and other cloud services revenue grew by **33%** [Doc-3]. Q2 FY2025: Azure and other cloud services revenue grew by **31%** [Doc-1]. This indicates that Azure's growth rate **decelerated** from Q1 FY2025 to Q2 FY2025 by **2 percentage points**."
+
+**Assessment:** V1 correctly refuses to hallucinate but retrieves only the Q1 filing — the Q2 quarterly report is semantically indistinguishable from Q1 to the dense encoder. V3's BM25 component anchors on the exact strings "Q1 FY2025" and "Q2 FY2025", pulling both filings into context and producing a perfect answer.
+
+**Failure type:** Retrieval failure (fiscal period discrimination) in V1. Fixed by hybrid retrieval in V3.
+
+---
+
+#### Case 3: Generation Failure Despite Good Retrieval — V3 Regression vs V1 (q011)
+
+**Question:** "What was Microsoft's operating margin in FY2024 compared to FY2022, and what drove the change?"
+
+**Ground truth:** FY2024 ≈ 44.6% vs FY2022 ≈ 42.1% — a 2.5 pp improvement driven by mix shift toward cloud services.
+
+**V1 (Baseline) actual answer:**
+> "In FY2024, operating income was $109,433M on revenue of $245,122M → Operating Margin ≈ 44.7%. In FY2022, operating income was $83,383M on revenue of $198,270M → Operating Margin ≈ 42.0%. The change is approximately 2.7 percentage points [Doc-4][Doc-9]."
+
+**V3 (Hybrid) actual answer:**
+> "In FY2024, Microsoft's operating income increased by $20.9 billion or 24% … The operating margin for FY2024 can be inferred from the increase in operating income, but the **exact operating margin percentage is not explicitly stated** in the provided context … a direct comparison cannot be made."
+
+**Assessment:** V3 retrieves growth-rate percentage chunks ("operating income increased 24%") which are semantically close to "operating margin" but computationally insufficient — the generator cannot derive the margin ratio from a growth-rate statement. V1's simpler dense retrieval surfaces the absolute income statement rows, which the generator correctly uses to compute ratios. This is a regression: a more sophisticated pipeline performs worse because RRF fusion promoted the wrong chunk type.
+
+**Failure type:** Generation failure in V3 (retrieved percentage-change text instead of absolute figures). Illustrates that higher RAGAS scores do not guarantee correct arithmetic reasoning.
+
+---
+
+#### Case 4: Multi-Document Retrieval Failure — V1 vs V4 (q016)
+
+**Question:** "How did the cumulative revenue growth of Microsoft's three business segments compare over the FY2022 to FY2024 period?"
+
+**Ground truth:** Intelligent Cloud +40% ($75.3B → $105.4B); Productivity +22% ($63.4B → $77.7B); More Personal Computing +4% ($59.6B → $62.0B).
+
+**V1 (Baseline) actual answer:**
+> "The provided context only contains data for FY2022 and does not include any information for FY2023 or FY2024. Therefore, I cannot provide a comparison of cumulative revenue growth … The provided documents do not contain sufficient information to answer this question."
+
+**V4 (Query Rewriting) actual answer:**
+> "FY2022 Revenue — Productivity and Business Processes: $63,364M; Intelligent Cloud: $74,965M; More Personal Computing: $59,941M [Doc-7]. FY2023 Revenue — Productivity and Business Processes: $69,274M [Doc-7] …" *(continues with FY2024 segment figures and calculates per-segment cumulative growth)*
+
+**Assessment:** V1 anchors on FY2022 and retrieves only that year's filings. The comparative question requires evidence from both endpoints (FY2022 and FY2024) simultaneously. V4's query rewriter decomposes the question into sub-queries per fiscal year and per segment, pulling both years' data into context. This is the strongest evidence for query rewriting's value on comparative analysis questions.
+
+**Failure type:** Retrieval failure (multi-document, multi-period) in V1. Fixed by query rewriting in V4.
 
 ---
 
@@ -473,41 +498,41 @@ Generation Failure:         ████         ~10% of errors
 #### Insight 1: Hybrid Retrieval Is Essential for Financial Queries
 Financial queries contain specific lexical markers — "FY2024", "Q1 FY2025", "$245.1 billion", "10-K" — that pure dense retrieval struggles to anchor on. BM25's exact term matching complements semantic search:
 
-- **Dense-only (V1)** struggles with fiscal period discrimination and exact figure matching
-- **Hybrid (V3)** resolves both by combining semantic context understanding with lexical anchoring
+- **Dense-only (V1)** achieves only 0.480 answer relevancy — it struggles with fiscal period discrimination and exact figure matching
+- **Hybrid (V3)** reaches 0.754 answer relevancy (+57%) by combining semantic context understanding with BM25 lexical anchoring
 
-Evidence: V3 achieves 0.942 answer relevancy vs V1's 0.769 — a 22.5% improvement.
+The effect is strongest in comparative analysis: V3 achieves 0.892 comparative relevancy vs V1's 0.199, a 4.5× improvement driven entirely by BM25 surfacing both fiscal periods simultaneously (see §6.3 Case 2).
 
-#### Insight 2: Reranking Provides the Highest Precision Gain per Latency Cost
-V2 adds only 0.35 seconds of latency over V1 (6.65s vs 6.30s) while improving context precision from 0.533 to 0.617 (+15.8%) and maintaining faithfulness of 0.851.
+#### Insight 2: Reranking Delivers the Highest Faithfulness and Precision
+V2 adds approximately 2.1 seconds over V1 (5.27s vs 3.19s) while improving context precision from 0.598 to 0.735 (+23%) and faithfulness from 0.803 to 0.884 (+10%). V2 achieves the highest faithfulness of all seven variants, meaning its answers are most tightly grounded in the retrieved context with fewest unsupported claims.
 
-The cross-encoder's direct query–chunk scoring filters the noisiest candidates from initial retrieval without the full cost of hybrid retrieval.
+The cross-encoder re-scores each query–chunk pair directly, filtering the noisiest candidates without requiring the full overhead of hybrid retrieval.
 
 #### Insight 3: Metadata Filtering (V5) Achieves the Best Latency Efficiency
-V5 is the fastest RAG variant at 5.89s average latency — faster than V1 — while achieving 0.865 faithfulness. Pre-filtering the vector search space by fiscal period before dense retrieval reduces both latency and retrieval noise simultaneously.
+V5 is the fastest RAG variant at 3.25s average latency — comparable to V1 (3.19s) and far below the hybrid variants (~10s) — while achieving 0.829 faithfulness. Pre-filtering the ChromaDB search space by fiscal period metadata before running dense retrieval reduces both retrieval noise and embedding lookup time simultaneously.
 
-The trade-off: V5 requires well-structured metadata. Its precision advantage diminishes for queries that span multiple fiscal periods (e.g., multi-hop FY2022–FY2024 comparisons).
+The trade-off: V5 requires consistent metadata tagging at ingest time. Its performance collapses on multi-hop queries spanning two fiscal years — reflected in 0% multi-hop numerical accuracy — because pre-filtering by one period excludes the other.
 
-#### Insight 4: Query Rewriting (V4) Improves Recall at the Cost of Faithfulness
-V4 achieves 0.825 context recall (tied with V6) but lower faithfulness (0.681). Query rewriting expands retrieval coverage by generating alternative phrasings, but this breadth introduces more contextual noise that the reranker cannot fully suppress within k=10.
+#### Insight 4: Query Rewriting (V4) Achieves the Best Context Recall
+V4 achieves 0.579 context recall — the highest of all variants — by generating alternative query phrasings before retrieval that capture evidence from multiple angles. The cost is lower faithfulness (0.699 vs V2's 0.884): broader retrieval introduces more contextual noise that the reranker cannot fully suppress at k=10.
 
-Best use case: ambiguous or underspecified queries where the original phrasing would miss relevant chunks.
+V4 achieves 80% comparative numerical accuracy — the highest single-category score across all variants — confirming its particular strength for multi-period synthesis questions.
 
 #### Insight 5: Context Compression (V6) Targets Multi-Hop and Long-Context Failures
-V6 matches V4's context recall (0.825) while applying compression to distil the most relevant content before generation. This is most beneficial for multi-hop questions where relevant information is spread across 5–10 chunks — compression removes the irrelevant surrounding text that otherwise dilutes generation quality.
+V6 applies sentence-level extraction after reranking to distil financially relevant content before generation. It achieves joint-highest numerical accuracy (55%, tied with V3 and V4) while adding minimal overhead over V4 (10.51s vs 10.06s). Compression is most beneficial for multi-hop questions where relevant figures are scattered across 5–10 retrieved chunks — removing boilerplate text reduces the risk of the generator anchoring on irrelevant sentences.
 
 ---
 
 ### 7.3 Trade-off Summary
 
-| Component | Primary Benefit | Best Query Type | Cost |
-|-----------|-----------------|-----------------|------|
-| Dense Retrieval | Grounding baseline | Factual | — |
-| + Reranking | Precision ↑ | Multi-Hop | +0.35s |
-| + Hybrid Retrieval | Recall ↑, Relevancy ↑↑ | Temporal, Comparative | +3.0s |
-| + Query Rewriting | Retrieval scope ↑ | Ambiguous, Temporal | +0.4s + extra LLM call |
-| + Metadata Filtering | Precision ↑, Latency ↓ | Temporal, Factual | Requires metadata |
-| + Context Compression | Faithfulness ↑ | Multi-Hop | +1.3s |
+| Component | Primary Benefit | Best Query Type | Latency | Cost |
+|-----------|-----------------|-----------------|---------|------|
+| Dense Retrieval (V1) | Grounding; faithfulness 0.803 | Factual | 3.19s | Baseline |
+| + Reranking (V2) | Faithfulness → 0.884; precision → 0.735 | Multi-Hop | 5.27s | +2.1s |
+| + Hybrid Retrieval (V3) | Relevancy → 0.754; comparative acc. → 0.892 | Temporal, Comparative | 10.94s | +7.8s; BM25 index required |
+| + Query Rewriting (V4) | Recall → 0.579 (highest); comp. num. acc. → 80% | Ambiguous, Multi-Hop | 10.06s | Extra LLM call per query |
+| + Metadata Filtering (V5) | Latency → 3.25s; precision maintained | Temporal, Factual | 3.25s | Requires metadata at ingest |
+| + Context Compression (V6) | Num. accuracy → 55%; noise reduction | Multi-Hop, Long-context | 10.51s | +0.5s over V3 |
 
 ---
 
@@ -540,7 +565,48 @@ V6 matches V4's context recall (0.825) while applying compression to distil the 
 
 ---
 
-## 9. Conclusion
+## 9. Risks and Guardrails
+
+### 9.1 Risk Identification
+
+| Risk | Description | Severity |
+|------|-------------|----------|
+| **Hallucination** | LLM generates plausible-sounding but incorrect financial figures not present in retrieved context | Critical |
+| **Stale data** | System answers questions using outdated filings when newer filings have been published | High |
+| **Retrieval miss** | Relevant chunks not retrieved, causing the LLM to answer from parametric memory | High |
+| **Numerical precision errors** | LLM rounds or paraphrases figures (e.g., "$245 billion" instead of "$245.1 billion") | Medium |
+| **Out-of-scope queries** | User asks about non-Microsoft companies or topics not covered in indexed filings | Medium |
+| **Adversarial queries** | Deliberately ambiguous queries designed to extract unsupported comparisons | Low |
+
+### 9.2 Implemented Mitigations
+
+**Guardrail 1 — Weak evidence threshold (implemented in `src/generation/answer_verifier.py`)**
+The generator checks whether retrieved context chunks pass a minimum reranker confidence threshold (configurable via `retrieval.weak_evidence_threshold = -3.0` in `settings.yaml`). If all retrieved chunks fall below this threshold, the system returns: *"The provided documents do not contain sufficient information to answer this question."* This prevents hallucination when retrieval fails entirely.
+
+Evidence from eval: V1 correctly refuses on q016 (multi-document comparative) rather than generating an unsupported answer. The trade-off is false refusals when relevant chunks exist but rank poorly — visible in the V1 temporal failure on q006.
+
+**Guardrail 2 — Citation enforcement (implemented in `src/generation/citation_formatter.py`)**
+Every answer appends `[Doc-N]` citations linking claims back to source chunks. This makes unsupported claims visible to the user and allows manual verification against the original SEC filing.
+
+**Guardrail 3 — Scope filtering (implemented in `src/retrieval/query_processor.py`)**
+Queries that do not match known Microsoft fiscal period patterns or document metadata are flagged as potentially out-of-scope before retrieval. Users receive a warning when the query may not be answerable from the indexed filings.
+
+**Guardrail 4 — Temperature = 0 (configured in `config/settings.yaml`)**
+The generator runs at temperature 0.0 to minimise stochastic variation in numerical outputs. This is especially important for financial figures where rounding behaviour at higher temperatures introduces numerical inconsistency.
+
+### 9.3 Residual Risks and Mitigations Not Yet Implemented
+
+| Residual Risk | Proposed Mitigation |
+|---------------|---------------------|
+| Stale filings | Automated ingestion pipeline to detect and index new EDGAR filings on release |
+| Numerical precision | Post-processing step to verify that quoted figures match source chunk text verbatim |
+| Adversarial prompts | Input sanitisation and query intent classification before retrieval |
+| Index drift | Periodic re-embedding when the embedding model is updated |
+
+---
+
+## 10. Conclusion
+
 
 This project demonstrates that **RAG components provide selective, query-type-dependent benefits** — confirming the study hypothesis that no single pipeline is universally optimal.
 
@@ -548,19 +614,19 @@ This project demonstrates that **RAG components provide selective, query-type-de
 
 | Finding | Evidence |
 |---------|---------|
-| RAG vs. no RAG: critical for grounding | V0 faithfulness = 0.000 → V1 faithfulness = 0.875 |
-| Hybrid retrieval best for answer relevancy | V3 achieves 0.942 vs V1's 0.769 (+22.5%) |
-| Metadata filtering most latency-efficient | V5 at 5.89s, fastest RAG variant, faithfulness = 0.865 |
-| Query rewriting and compression maximise recall | V4, V6 both achieve 0.825 context recall |
-| Comparative analysis is the hardest category | V1 comparative relevancy = 0.187 — requires hybrid |
+| RAG vs. no RAG: critical for grounding | V0 faithfulness = 0.126 → V1 faithfulness = 0.803 |
+| Hybrid retrieval best for answer relevancy | V3 achieves 0.754 vs V1's 0.480 (+57%) |
+| Metadata filtering most latency-efficient | V5 at 3.25s, fastest RAG variant, faithfulness = 0.829 |
+| Query rewriting achieves best context recall | V4 achieves 0.579, highest of all variants |
+| Comparative analysis is the hardest category | V1 comparative relevancy = 0.199 — requires hybrid (V3: 0.892) |
 
 ### Key Insights:
 
-1. **Hybrid retrieval (V3) is essential for temporal and comparative financial queries** — fiscal period lexical anchoring cannot be achieved by dense retrieval alone
-2. **Reranking (V2) provides the best precision-per-latency trade-off** — minimal latency cost for meaningful context quality improvement
-3. **Metadata filtering (V5) is uniquely efficient** — improves precision while reducing latency by narrowing the search space before embedding lookup
-4. **Context compression (V6) specifically addresses multi-hop and chunking failures** — most beneficial for cross-section and cross-document questions
-5. **No single variant wins across all categories** — adaptive pipeline selection or an ensemble approach is the recommended direction for production systems
+1. **Hybrid retrieval (V3) is essential for temporal and comparative financial queries** — V3 achieves 0.892 comparative relevancy vs V1's 0.199; BM25 lexical anchoring on fiscal period strings is non-negotiable for this query type
+2. **Reranking (V2) delivers the highest faithfulness (0.884) and context precision (0.735)** — best choice when answer groundedness matters more than relevancy breadth
+3. **Metadata filtering (V5) is uniquely efficient at 3.25s** — matches V1 latency while improving precision; fails on multi-hop queries spanning multiple fiscal periods
+4. **Query rewriting (V4) is the best choice for multi-document synthesis** — highest recall (0.579) and 80% comparative numerical accuracy
+5. **No single variant wins across all categories** — adaptive pipeline selection based on query type is the recommended direction for production systems
 
 ### Recommendations for Financial RAG Systems:
 - Always use hybrid retrieval (dense + BM25) for queries with fiscal period specificity
@@ -573,7 +639,7 @@ FinSight demonstrates that thoughtful, component-level RAG design — combined w
 
 ---
 
-## 10. Appendix
+## 11. Appendix
 
 ### A. Hyperparameters
 
