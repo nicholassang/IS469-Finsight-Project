@@ -549,7 +549,7 @@ The most effective improvements come from precision-enhancing components (rerank
 
 ---
 
-<!-- ### 5.5 Ablation Study: Eight-Step Component Analysis
+### 5.5 Ablation Study: Eight-Step Component Analysis
 
 The ablation study isolates each component's individual contribution:
 
@@ -570,7 +570,7 @@ python evaluation/ablation_study.py
 
 # Quick test (5 questions)
 python evaluation/ablation_study.py --limit 5
-``` -->
+``` 
 
 ---
 

@@ -1,0 +1,454 @@
+{
+  "variants": [
+    "v0_llm_only",
+    "v1_baseline",
+    "v2_advanced_a",
+    "v3_advanced_b",
+    "v4_advanced_c",
+    "v5_advanced_d",
+    "v6_advanced_e"
+  ],
+  "categories": [
+    "factual_retrieval",
+    "temporal_reasoning",
+    "multi_hop_reasoning",
+    "comparative_analysis"
+  ],
+  "category_metrics": [
+    {
+      "variant": "v0_llm_only",
+      "category": "factual_retrieval",
+      "n": 5,
+      "n_refusals": 1,
+      "answer_rate": 0.8,
+      "numerical_accuracy": 0.4,
+      "faithfulness": 0.0,
+      "answer_relevancy": 0.3779,
+      "context_recall": 0.0,
+      "context_precision": 0.0,
+      "avg_latency_s": 3.264,
+      "failures": {
+        "generation_failure": 3
+      }
+    },
+    {
+      "variant": "v0_llm_only",
+      "category": "temporal_reasoning",
+      "n": 5,
+      "n_refusals": 3,
+      "answer_rate": 0.4,
+      "numerical_accuracy": 0.2,
+      "faithfulness": 0.1867,
+      "answer_relevancy": 0.0,
+      "context_recall": 0.0,
+      "context_precision": 0.0,
+      "avg_latency_s": 2.814,
+      "failures": {
+        "generation_failure": 4
+      }
+    },
+    {
+      "variant": "v0_llm_only",
+      "category": "multi_hop_reasoning",
+      "n": 5,
+      "n_refusals": 0,
+      "answer_rate": 1.0,
+      "numerical_accuracy": 0.2,
+      "faithfulness": 0.0,
+      "answer_relevancy": 0.5211,
+      "context_recall": 0.0,
+      "context_precision": 0.0,
+      "avg_latency_s": 4.887,
+      "failures": {
+        "generation_failure": 3
+      }
+    },
+    {
+      "variant": "v0_llm_only",
+      "category": "comparative_analysis",
+      "n": 5,
+      "n_refusals": 1,
+      "answer_rate": 0.8,
+      "numerical_accuracy": 0.2,
+      "faithfulness": 0.2308,
+      "answer_relevancy": 0.5412,
+      "context_recall": 0.0,
+      "context_precision": 0.0,
+      "avg_latency_s": 4.79,
+      "failures": {
+        "generation_failure": 1
+      }
+    },
+    {
+      "variant": "v1_baseline",
+      "category": "factual_retrieval",
+      "n": 5,
+      "n_refusals": 0,
+      "answer_rate": 1.0,
+      "numerical_accuracy": 0.2,
+      "faithfulness": 0.7333,
+      "answer_relevancy": 0.9879,
+      "context_recall": 0.6667,
+      "context_precision": 0.593,
+      "avg_latency_s": 3.554,
+      "failures": {}
+    },
+    {
+      "variant": "v1_baseline",
+      "category": "temporal_reasoning",
+      "n": 5,
+      "n_refusals": 3,
+      "answer_rate": 0.4,
+      "numerical_accuracy": 0.8,
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.3872,
+      "context_recall": 0.4,
+      "context_precision": 0.4817,
+      "avg_latency_s": 2.516,
+      "failures": {
+        "retrieval_failure": 1
+      }
+    },
+    {
+      "variant": "v1_baseline",
+      "category": "multi_hop_reasoning",
+      "n": 5,
+      "n_refusals": 3,
+      "answer_rate": 0.4,
+      "numerical_accuracy": 0.0,
+      "faithfulness": 0.4583,
+      "answer_relevancy": 0.357,
+      "context_recall": 0.7333,
+      "context_precision": 0.6301,
+      "avg_latency_s": 3.876,
+      "failures": {
+        "query_understanding_failure": 3
+      }
+    },
+    {
+      "variant": "v1_baseline",
+      "category": "comparative_analysis",
+      "n": 5,
+      "n_refusals": 4,
+      "answer_rate": 0.2,
+      "numerical_accuracy": 0.4,
+      "faithfulness": 0.7056,
+      "answer_relevancy": 0.1991,
+      "context_recall": 0.5667,
+      "context_precision": 0.7216,
+      "avg_latency_s": 3.914,
+      "failures": {
+        "retrieval_failure": 1,
+        "query_understanding_failure": 2
+      }
+    },
+    {
+      "variant": "v2_advanced_a",
+      "category": "factual_retrieval",
+      "n": 5,
+      "n_refusals": 0,
+      "answer_rate": 1.0,
+      "numerical_accuracy": 0.4,
+      "faithfulness": 0.6667,
+      "answer_relevancy": 0.9878,
+      "context_recall": 0.5333,
+      "context_precision": 0.4518,
+      "avg_latency_s": 5.422,
+      "failures": {}
+    },
+    {
+      "variant": "v2_advanced_a",
+      "category": "temporal_reasoning",
+      "n": 5,
+      "n_refusals": 3,
+      "answer_rate": 0.4,
+      "numerical_accuracy": 0.6,
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.3872,
+      "context_recall": 0.4,
+      "context_precision": 0.8846,
+      "avg_latency_s": 3.515,
+      "failures": {
+        "retrieval_failure": 2
+      }
+    },
+    {
+      "variant": "v2_advanced_a",
+      "category": "multi_hop_reasoning",
+      "n": 5,
+      "n_refusals": 3,
+      "answer_rate": 0.4,
+      "numerical_accuracy": 0.4,
+      "faithfulness": 0.8425,
+      "answer_relevancy": 0.3467,
+      "context_recall": 0.1333,
+      "context_precision": 0.8071,
+      "avg_latency_s": 4.911,
+      "failures": {
+        "generation_failure": 1,
+        "retrieval_failure": 2
+      }
+    },
+    {
+      "variant": "v2_advanced_a",
+      "category": "comparative_analysis",
+      "n": 5,
+      "n_refusals": 4,
+      "answer_rate": 0.2,
+      "numerical_accuracy": 0.4,
+      "faithfulness": 0.8629,
+      "answer_relevancy": 0.1886,
+      "context_recall": 0.4,
+      "context_precision": 0.7907,
+      "avg_latency_s": 4.166,
+      "failures": {
+        "retrieval_failure": 2,
+        "query_understanding_failure": 1
+      }
+    },
+    {
+      "variant": "v3_advanced_b",
+      "category": "factual_retrieval",
+      "n": 5,
+      "n_refusals": 0,
+      "answer_rate": 1.0,
+      "numerical_accuracy": 0.6,
+      "faithfulness": 0.6333,
+      "answer_relevancy": 0.9836,
+      "context_recall": 0.4,
+      "context_precision": 0.4969,
+      "avg_latency_s": 4.984,
+      "failures": {}
+    },
+    {
+      "variant": "v3_advanced_b",
+      "category": "temporal_reasoning",
+      "n": 5,
+      "n_refusals": 1,
+      "answer_rate": 0.8,
+      "numerical_accuracy": 0.8,
+      "faithfulness": 0.8611,
+      "answer_relevancy": 0.5853,
+      "context_recall": 0.3,
+      "context_precision": 0.6857,
+      "avg_latency_s": 8.449,
+      "failures": {
+        "retrieval_failure": 1
+      }
+    },
+    {
+      "variant": "v3_advanced_b",
+      "category": "multi_hop_reasoning",
+      "n": 5,
+      "n_refusals": 2,
+      "answer_rate": 0.6,
+      "numerical_accuracy": 0.4,
+      "faithfulness": 0.8165,
+      "answer_relevancy": 0.547,
+      "context_recall": 0.0,
+      "context_precision": 0.7919,
+      "avg_latency_s": 9.315,
+      "failures": {
+        "retrieval_failure": 1
+      }
+    },
+    {
+      "variant": "v3_advanced_b",
+      "category": "comparative_analysis",
+      "n": 5,
+      "n_refusals": 1,
+      "answer_rate": 0.8,
+      "numerical_accuracy": 0.6,
+      "faithfulness": 0.8462,
+      "answer_relevancy": 0.7262,
+      "context_recall": 0.3,
+      "context_precision": 0.8481,
+      "avg_latency_s": 8.103,
+      "failures": {}
+    },
+    {
+      "variant": "v4_advanced_c",
+      "category": "factual_retrieval",
+      "n": 5,
+      "n_refusals": 0,
+      "answer_rate": 1.0,
+      "numerical_accuracy": 0.4,
+      "faithfulness": 0.7,
+      "answer_relevancy": 0.988,
+      "context_recall": 0.6,
+      "context_precision": 0.4816,
+      "avg_latency_s": 6.517,
+      "failures": {}
+    },
+    {
+      "variant": "v4_advanced_c",
+      "category": "temporal_reasoning",
+      "n": 5,
+      "n_refusals": 2,
+      "answer_rate": 0.6,
+      "numerical_accuracy": 0.8,
+      "faithfulness": 0.5609,
+      "answer_relevancy": 0.5554,
+      "context_recall": 0.2,
+      "context_precision": 0.6762,
+      "avg_latency_s": 7.283,
+      "failures": {
+        "retrieval_failure": 1
+      }
+    },
+    {
+      "variant": "v4_advanced_c",
+      "category": "multi_hop_reasoning",
+      "n": 5,
+      "n_refusals": 1,
+      "answer_rate": 0.8,
+      "numerical_accuracy": 0.0,
+      "faithfulness": 0.9036,
+      "answer_relevancy": 0.7249,
+      "context_recall": 0.6,
+      "context_precision": 0.7417,
+      "avg_latency_s": 10.468,
+      "failures": {
+        "generation_failure": 1,
+        "retrieval_failure": 1
+      }
+    },
+    {
+      "variant": "v4_advanced_c",
+      "category": "comparative_analysis",
+      "n": 5,
+      "n_refusals": 0,
+      "answer_rate": 1.0,
+      "numerical_accuracy": 0.8,
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.867,
+      "context_recall": 0.45,
+      "context_precision": 0.8433,
+      "avg_latency_s": 9.784,
+      "failures": {}
+    },
+    {
+      "variant": "v5_advanced_d",
+      "category": "factual_retrieval",
+      "n": 5,
+      "n_refusals": 0,
+      "answer_rate": 1.0,
+      "numerical_accuracy": 0.0,
+      "faithfulness": 0.7,
+      "answer_relevancy": 0.988,
+      "context_recall": 0.6333,
+      "context_precision": 0.5486,
+      "avg_latency_s": 2.949,
+      "failures": {}
+    },
+    {
+      "variant": "v5_advanced_d",
+      "category": "temporal_reasoning",
+      "n": 5,
+      "n_refusals": 3,
+      "answer_rate": 0.4,
+      "numerical_accuracy": 0.8,
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.3872,
+      "context_recall": 0.4,
+      "context_precision": 0.4907,
+      "avg_latency_s": 2.426,
+      "failures": {
+        "retrieval_failure": 1
+      }
+    },
+    {
+      "variant": "v5_advanced_d",
+      "category": "multi_hop_reasoning",
+      "n": 5,
+      "n_refusals": 3,
+      "answer_rate": 0.4,
+      "numerical_accuracy": 0.0,
+      "faithfulness": 0.5417,
+      "answer_relevancy": 0.3574,
+      "context_recall": 0.6667,
+      "context_precision": 0.6448,
+      "avg_latency_s": 5.63,
+      "failures": {
+        "query_understanding_failure": 3
+      }
+    },
+    {
+      "variant": "v5_advanced_d",
+      "category": "comparative_analysis",
+      "n": 5,
+      "n_refusals": 4,
+      "answer_rate": 0.2,
+      "numerical_accuracy": 0.4,
+      "faithfulness": 0.92,
+      "answer_relevancy": 0.1991,
+      "context_recall": 0.3667,
+      "context_precision": 0.7244,
+      "avg_latency_s": 3.51,
+      "failures": {
+        "retrieval_failure": 2,
+        "query_understanding_failure": 1
+      }
+    },
+    {
+      "variant": "v6_advanced_e",
+      "category": "factual_retrieval",
+      "n": 5,
+      "n_refusals": 1,
+      "answer_rate": 0.8,
+      "numerical_accuracy": 0.6,
+      "faithfulness": 0.7143,
+      "answer_relevancy": 0.788,
+      "context_recall": 0.6,
+      "context_precision": 0.5097,
+      "avg_latency_s": 8.298,
+      "failures": {
+        "retrieval_failure": 1
+      }
+    },
+    {
+      "variant": "v6_advanced_e",
+      "category": "temporal_reasoning",
+      "n": 5,
+      "n_refusals": 2,
+      "answer_rate": 0.6,
+      "numerical_accuracy": 0.6,
+      "faithfulness": 0.7622,
+      "answer_relevancy": 0.5509,
+      "context_recall": 0.6,
+      "context_precision": 0.4036,
+      "avg_latency_s": 10.101,
+      "failures": {
+        "retrieval_failure": 2
+      }
+    },
+    {
+      "variant": "v6_advanced_e",
+      "category": "multi_hop_reasoning",
+      "n": 5,
+      "n_refusals": 2,
+      "answer_rate": 0.6,
+      "numerical_accuracy": 0.4,
+      "faithfulness": 0.7303,
+      "answer_relevancy": 0.7291,
+      "context_recall": 0.1333,
+      "context_precision": 0.6276,
+      "avg_latency_s": 11.809,
+      "failures": {}
+    },
+    {
+      "variant": "v6_advanced_e",
+      "category": "comparative_analysis",
+      "n": 5,
+      "n_refusals": 0,
+      "answer_rate": 1.0,
+      "numerical_accuracy": 0.6,
+      "faithfulness": 0.5673,
+      "answer_relevancy": 0.8844,
+      "context_recall": 0.2,
+      "context_precision": 0.7554,
+      "avg_latency_s": 11.859,
+      "failures": {}
+    }
+  ]
+}

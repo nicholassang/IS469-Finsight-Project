@@ -44,7 +44,7 @@ generation:
   backend: openai          # vLLM speaks the OpenAI API
   model: gpt-4o-mini #qwen2.5-14b
   base_url: https://api.openai.com/v1 # http://localhost:8000/v1
-  api_key: "placeholder"
+  api_key: "dummy" #REPLACE YOUR API KEY HERE FOR DIRECT OPENAI USAGE. OTHERWISE, RELY ON LOCAL VLLM DEPLOYMENT WITH API KEY "dummy"
   temperature: 0.0
   max_tokens: 512
   max_chunk_chars: 1800
