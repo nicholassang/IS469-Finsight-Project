@@ -169,9 +169,8 @@ finsight/
 │   ├── eval_dataset.json      # 20-question benchmark (4 categories)
 │   ├── benchmark.csv          # Benchmark with extended metadata
 │   ├── run_evaluation.py      # RAGAS + numerical accuracy evaluation runner
-│   ├── ablation_study.py      # 8-step component ablation
+│   ├── ablation_study.py      # 4-step component ablation
 │   ├── category_analysis.py   # Per-category breakdown and error analysis
-│   ├── metrics.py             # Hit rate, MRR, exact match, ROUGE-L
 │   └── results/               # JSON result files per evaluation run
 ├── app/
 │   └── streamlit_app.py       # Interactive Streamlit UI
@@ -232,8 +231,6 @@ We indexed **9 Microsoft SEC filings** spanning FY2022 to Q2 FY2026:
 | **Context Recall** | RAGAS | Did retrieval surface the relevant information? |
 | **Context Precision** | RAGAS | What fraction of retrieved context was actually useful? |
 | **Numerical Accuracy** | Custom | Does the answer contain the key numbers from the ground truth? |
-| **Top-3 Hit Rate** | Custom | Is the target document in the top-3 retrieved chunks? |
-| **MRR** | Custom | Mean Reciprocal Rank of the first relevant retrieved chunk |
 
 ---
 
@@ -550,13 +547,9 @@ A notable anomaly persists: V0 (no retrieval) achieves 40% numerical accuracy on
 
 The most effective improvements come from precision-enhancing components (reranking, query rewriting), while recall-expanding components (hybrid retrieval, compression) introduce significant latency without consistent gains in faithfulness.
 
-
-
-
-
 ---
 
-### 5.4 Ablation Study: Eight-Step Component Analysis
+<!-- ### 5.5 Ablation Study: Eight-Step Component Analysis
 
 The ablation study isolates each component's individual contribution:
 
@@ -577,22 +570,7 @@ python evaluation/ablation_study.py
 
 # Quick test (5 questions)
 python evaluation/ablation_study.py --limit 5
-```
-
----
-
-### 5.5 Retrieval Performance
-
-Context coverage (fraction of evaluated questions for which at least one chunk was retrieved) is a proxy for retrieval hit rate:
-
-| Metric | V0 | V1 | V2 | V3 | V4 | V5 | V6 |
-|--------|----|----|----|----|----|----|-----|
-| Context Coverage | 0% | 100% | 100% | 100% | 100% | 100% | 100% |
-| Avg Retrieval (ms) | 0 | 567 | 566 | 1,305 | 444 | 426 | 459 |
-| Avg Reranking (ms) | 0 | 0 | 740 | 2,826 | 1,272 | 0 | 1,392 |
-| Avg Generation (ms) | 6,742 | 5,731 | 5,341 | 5,191 | 4,045 | 5,458 | 5,734 |
-
-*Per-chunk hit rate and MRR require ground-truth chunk annotations. Run `python evaluation/metrics.py --results evaluation/results/` after annotating source chunks to populate.*
+``` -->
 
 ---
 
@@ -607,7 +585,7 @@ Following the framework defined in the outline (§6.4):
 | **Retrieval Failure** | Relevant chunk not retrieved at all |
 | **Ranking Failure** | Relevant chunk retrieved but ranked too low to appear in top-k |
 | **Chunking Failure** | Information split across chunk boundaries, breaking coherence |
-| **Query Understanding Failure** | Query ambiguity or underspecification prevents correct retrieval |
+| **Query Understanding Failure** | Query ambiguity or under-specification prevents correct retrieval |
 | **Generation Failure** | LLM misinterprets context or generates unsupported claims |
 
 ### 6.2 Component–Failure Mapping
@@ -805,6 +783,8 @@ V6 applies sentence-level extraction after reranking to distil financially relev
 
 6. **Larger Context Models:** Migrate to 32K+ context window models to handle long multi-period context windows without truncation
 
+6. **Retrieval-level metrcs:** Implement chunk-level annotation to measure metrics like MRR and top-k hit rate
+
 ---
 
 ## 9. Risks and Guardrails
@@ -942,8 +922,6 @@ python evaluation/ablation_study.py
 # 6. Category and error analysis
 python evaluation/category_analysis.py
 
-# 7. Retrieval metrics (hit rate, MRR)
-python evaluation/metrics.py --results evaluation/results/
 ```
 
 ### D. Reproducibility Controls
