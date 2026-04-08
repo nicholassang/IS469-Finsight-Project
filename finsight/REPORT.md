@@ -590,15 +590,21 @@ Following the framework defined in the outline (§6.4):
 
 ### 6.2 Component–Failure Mapping
 
+The earlier qualitative matrix overstated some failure types. Using the saved classifier output in [evaluation/results/category_report.json](evaluation/results/category_report.json), the per-variant mapping is more concrete:
+
 | Failure Type | V0 | V1 | V2 | V3 | V4 | V5 | V6 |
 |---|---|---|---|---|---|---|---|
-| Retrieval Failure | — | High | Moderate | Low | Low | Low | Low |
-| Ranking Failure | — | — | Moderate | Low | Low | Low | Low |
-| Query Understanding | High | Moderate | Moderate | Low | Low↓ | Moderate | Low |
-| Chunking Failure | — | Moderate | Moderate | Moderate | Moderate | Moderate | Low |
-| Generation Failure | High | Low | Low | Low | Low | Low | Low↓ |
+| Retrieval Failure | 0 | 2 | 6 | 2 | 2 | 3 | 3 |
+| Query Understanding Failure | 0 | 5 | 1 | 0 | 0 | 4 | 0 |
+| Generation Failure | 11 | 0 | 1 | 0 | 1 | 0 | 0 |
+| Ranking Failure | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| Chunking Failure | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
 
-*V4 specifically targets Query Understanding Failure; V6 targets Chunking and Generation Failure via context compression.*
+This makes the component pattern clearer. **V0 is purely a generation-failure baseline**: all 11 of its classified failures come from unsupported answers without retrieval. **V1 and V5 are dominated by query-understanding failures**, especially on multi-period and comparative questions where dense retrieval or metadata filtering fails to disambiguate the intended fiscal spans. **V2, V3, V4, and V6 are dominated by retrieval failures**, meaning the pipeline either retrieved the wrong evidence set or failed to bring the necessary evidence into the final context at all.
+
+Two caveats matter. First, **ranking failure** and **chunking failure** appear as zero not because those issues are impossible, but because the current heuristic in [evaluation/category_analysis.py](evaluation/category_analysis.py) rarely surfaces them as separate labels; most such cases are absorbed into retrieval or generation failure. Second, the table should be read as a mapping of *observed dominant failure behaviour in this experiment*, not as a universal statement about what each component can or cannot do.
+
+From a systems perspective, the main takeaway is that adding retrieval components reduced pure hallucination sharply after V0, but the new bottleneck became **evidence selection and evidence alignment**, not raw answer generation. That shift is exactly what the case studies show: the stronger pipelines usually fail by missing or misassembling evidence, not by inventing unsupported claims from scratch.
 
 ### 6.3 Case Studies
 
