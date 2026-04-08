@@ -859,16 +859,17 @@ This project demonstrates that **RAG components provide selective, query-type-de
 | Finding | Evidence |
 |---------|----------|
 | RAG vs. no RAG: critical for grounding | V0 faithfulness = 0.098 → V1 faithfulness = 0.738 |
-| Hybrid retrieval best for answer relevancy | V3 achieves 0.711 vs V1's 0.483 (+47%) |
-| V6 achieves best numerical accuracy | V6 = 0.550, strongest on comparative (0.884 relevancy) |
-| Metadata filtering most latency-efficient | V5 at 3.63s, fastest RAG variant, faithfulness = 0.803 |
-| Comparative analysis is the hardest category| V1 comparative relevancy = 0.199 — requires V4 (0.867) or V6 (0.884) |
+| Query rewriting achieves the highest overall answer relevancy | V4 = 0.784 vs V1 = 0.483 and V3 = 0.711 |
+| Reranking delivers the strongest grounding quality | V2 has the highest faithfulness (0.843) and context precision (0.741) |
+| Hybrid retrieval achieves the best aggregate numerical accuracy | V3 = 0.600, ahead of V6 = 0.550 and V4 = 0.500 |
+| Dense-only retrieval remains the fastest RAG baseline | V1 = 3.46s, slightly faster than V5 = 3.63s |
+| Comparative and multi-hop questions remain the most demanding | V1 scores only 0.199 on comparative relevancy and 0.357 on multi-hop relevancy, while advanced variants are required to recover performance |
 
 ### Recommendations for Financial RAG Systems
 
-1. Always use hybrid retrieval (dense + BM25) for queries with fiscal period specificity.
+1. Use hybrid retrieval (dense + BM25) for fiscal-period-specific and cross-period comparison queries, where lexical anchors such as fiscal years and quarter labels matter.
 2. Apply cross-encoder reranking for highest context precision (V2, 0.741).
-3. Implement metadata pre-filtering as a low-latency precision improvement for temporal (time-sensitive) queries.
+3. Implement metadata pre-filtering as a low-latency precision improvement for narrowly scoped temporal queries with a clearly identifiable fiscal period.
 4. Use query rewriting (V4) or context compression (V6) for comparative and multi-hop questions.
 5. Maintain an LLM-only baseline to quantify the value added by each retrieval component, and ensure benchmark questions are genuinely unanswerable from model training data alone.
 
