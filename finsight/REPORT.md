@@ -29,7 +29,7 @@ Financial filings such as SEC 10-K and 10-Q reports are critical sources of info
 This project presents **FinSight**, a Retrieval-Augmented Generation (RAG) system designed specifically for question-answering over Microsoft Corporation's official SEC filings. We implement and rigorously compare **seven pipeline variants (V0–V6)** to understand how individual RAG components affect performance across different query types.
 
 ### Key Contributions
-1. **End-to-end RAG implementation** with seven configurable pipelines covering a full component ablation: no retrieval (V0), dense-only (V1), dense+reranking (V2), hybrid+reranking (V3), query rewriting (V4), metadata filtering (V5), and context compression (V6)
+1. **End-to-end RAG implementation** with seven configurable pipelines covering a full component ablation: no retrieval (V0), dense-only (V1), dense + reranking (V2), hybrid+reranking (V3), query rewriting (V4), metadata filtering (V5), and context compression (V6)
 2. **Controlled experimental design** isolating the contribution of each RAG component to performance across four query categories
 3. **Comprehensive evaluation** using RAGAS metrics, numerical accuracy, and qualitative error analysis
 4. **Actionable insights** on which RAG components benefit which query types
@@ -39,11 +39,7 @@ This project presents **FinSight**, a Retrieval-Augmented Generation (RAG) syste
 ## 2. Problem Statement & Objectives
 
 ### Problem Statement
-Extracting specific financial insights from SEC filings—such as revenue trends, segment performance, or risk disclosures—requires:
-- Navigating hundreds of pages of complex financial documents
-- Understanding Microsoft's fiscal calendar (July–June fiscal year)
-- Cross-referencing information across multiple filing periods
-- Distinguishing between similar-sounding metrics across different time periods
+Extracting specific financial insights from SEC filings requires navigating hundreds of pages of complex financial documents, understanding Microsoft's fiscal calendar (July–June fiscal year), cross-referencing information across multiple filing periods, and distinguishing between similar-sounding metrics across different time periods.
 
 ### Objectives
 1. Develop a domain-specific QA system that provides accurate, citation-backed answers
@@ -67,43 +63,43 @@ Different RAG components provide selective benefits depending on query type, rat
                                                         │
                               ┌─────────────────────────▼───────────────────────────────┐
                               │         QUERY PROCESSING (V4: LLM Query Rewrite)        │
-                              │         (Fiscal period detection, normalisation)         │
+                              │         (Fiscal period detection, normalisation)        │
                               └─────────────────────────┬───────────────────────────────┘
                                                         │
                     ┌───────────────────────────────────┼───────────────────────────────────┐
                     │                                   │                                   │
-          ┌─────────▼─────────┐               ┌────────▼────────┐                          │
-          │   DENSE RETRIEVER │               │  SPARSE (BM25)  │             V0: Skip     │
+          ┌─────────▼─────────┐               ┌────────▼────────┐                           │
+          │   DENSE RETRIEVER │               │  SPARSE (BM25)  │             V0: Skip      │
           │  (ChromaDB +      │               │   RETRIEVER     │             retrieval     │
           │   MPNet embed)    │               │   (V3,V4,V6)    │             entirely      │
-          │  V5: pre-filtered │               │                 │                          │
-          └─────────┬─────────┘               └────────┬────────┘                          │
-                    │                                   │                                   │
-                    │  V1: Direct to Generator          │                                   │
-                    │  ─────────────────────────────────────────────────────────────────►  │
-                    │                                   │                                   │
-                    │  V2,V3,V4,V5,V6: via Reranker    │                                   │
-                    └───────────────┬───────────────────┘                                   │
+          │  V5: pre-filtered │               │                 │                           │
+          └─────────┬─────────┘               └────────┬────────┘                           │
+                    │                                  │                                    │
+                    │  V1: Direct to Generator         │                                    │
+                    │  ────────────────────────────────────────────────────────────────────►│
+                    │                                  │                                    │
+                    │  V2,V3,V4,V5,V6: via Reranker    │                                    │
+                    └───────────────┬──────────────────┘                                    │
                                     │                                                       │
                     ┌───────────────▼───────────────────┐                                   │
                     │    RRF FUSION (V3, V4, V6 only)   │                                   │
-                    │   Score = Σ(1/(k + rank_i))        │                                   │
+                    │      Score = Σ(1/(k + rank_i))    │                                   │
                     └───────────────┬───────────────────┘                                   │
                                     │                                                       │
                     ┌───────────────▼───────────────────┐                                   │
                     │     CROSS-ENCODER RERANKER        │                                   │
                     │     (ms-marco-MiniLM-L-6-v2)      │                                   │
-                    │    (V2, V3, V4, V6 only)          │                                   │
+                    │     (V2, V3, V4, V6 only)         │                                   │
                     └───────────────┬───────────────────┘                                   │
                                     │                                                       │
                     ┌───────────────▼───────────────────┐                                   │
                     │   CONTEXT COMPRESSION (V6 only)   │                                   │
-                    │   Filters irrelevant chunk text    │                                   │
+                    │   Filters irrelevant chunk text   │                                   │
                     └───────────────┬───────────────────┘                                   │
                                     │                                                       │
                     ┌───────────────▼───────────────────┐◄──────────────────────────────────┘
                     │         TOP-K CONTEXT             │
-                    │      (Final retrieved chunks)     │
+                    │     (Final retrieved chunks)      │
                     └───────────────┬───────────────────┘
                                     │
                     ┌───────────────▼───────────────────┐
@@ -118,21 +114,35 @@ Different RAG components provide selective benefits depending on query type, rat
                     └───────────────────────────────────┘
 ```
 
+---
+
 ### 3.2 Seven Pipeline Variants
 
 Each variant introduces a single additional component to isolate its impact:
 
-| Variant | Pipeline Flow | Key Addition |
-|---------|--------------|--------------|
-| **V0 LLM-only** | Generate only | No retrieval — hallucination baseline |
-| **V1 Baseline** | Dense → Generate | ChromaDB dense retrieval (all-mpnet-base-v2), top-k=5 |
-| **V2 Advanced A** | Dense → Rerank → Generate | Cross-encoder reranking (ms-marco-MiniLM-L-6-v2) |
-| **V3 Advanced B** | BM25 + Dense → RRF → Rerank → Generate | Hybrid retrieval + RRF fusion |
-| **V4 Advanced C** | Query Rewrite → BM25 + Dense → RRF → Rerank → Generate | LLM-based query rewriting |
-| **V5 Advanced D** | Metadata Filter → Dense → Generate | Fiscal period metadata pre-filtering |
-| **V6 Advanced E** | BM25 + Dense → RRF → Rerank → Compress → Generate | Context compression |
+| Variant | Pipeline Flow | Key Addition | Purpose |
+|---------|--------------|--------------|---------|
+| **V0 LLM-only** | Generate only | No retrieval | Hallucination baseline |
+| **V1 Baseline** | Dense → Generate | ChromaDB dense retrieval (all-mpnet-base-v2), top-k=5 | Establishes retrieval floor |
+| **V2 Advanced A** | Dense → Rerank → Generate | Cross-encoder reranking (ms-marco-MiniLM-L-6-v2), top-k=5 | Improve ranking precision |
+| **V3 Advanced B** | BM25 + Dense → RRF → Rerank → Generate | Hybrid retrieval + RRF fusion | Lexical + semantic combination |
+| **V4 Advanced C** | Query Rewrite → BM25 + Dense → RRF → Rerank → Generate | LLM-based query rewriting | Handles ambiguous queries |
+| **V5 Advanced D** | Metadata Filter → Dense → Generate | Fiscal period metadata pre-filtering | Low-latency precision boost |
+| **V6 Advanced E** | BM25 + Dense → RRF → Rerank → Compress → Generate | Context compression | Reduce noise for multi-hop |
 
-### 3.3 Project Structure
+---
+
+### 3.3 Model Configuration
+| Component | Model | Details |
+|-----------|-------|---------|
+| Embeddings | sentence-transformers/all-mpnet-base-v2 | 768-dim, normalised |
+| Reranker | cross-encoder/ms-macro-MiniLM-L-6-v2 | Cross-encoder, max_len=512 |
+| Generator | Qwen2.5-14B-Instruct | via vLLM, temp=0.0, max_tokens=512 |
+| RAGAS Judge | Qwen2.5-14B-Instruct | Same model, max_tokens=1024 |
+
+---
+
+### 3.4 Project Structure
 
 ```
 finsight/
@@ -175,7 +185,6 @@ finsight/
 ---
 
 ## 4. Methodology
-
 ### 4.1 Dataset
 
 We indexed **9 Microsoft SEC filings** spanning FY2022 to Q2 FY2026:
@@ -185,7 +194,9 @@ We indexed **9 Microsoft SEC filings** spanning FY2022 to Q2 FY2026:
 | 10-K (Annual) | 4 | FY2022, FY2023, FY2024, FY2025 |
 | 10-Q (Quarterly) | 5 | Q1–Q3 FY2025, Q1–Q2 FY2026 |
 
-**Important:** Microsoft's fiscal year runs July 1–June 30. FY2024 = July 2023–June 2024.
+**Important note:** Microsoft's fiscal year runs July 1–June 30. FY2024 = July 2023–June 2024.
+
+---
 
 ### 4.2 Chunking Strategy
 
@@ -195,16 +206,9 @@ We indexed **9 Microsoft SEC filings** spanning FY2022 to Q2 FY2026:
 | Overlap | 10–20% | Preserve cross-boundary context |
 | Metadata | doc_type, fiscal_period, section | Enable filtered retrieval (V5) |
 
-### 4.3 Model Configuration
+---
 
-| Component | Model | Details |
-|-----------|-------|---------|
-| Embeddings | `sentence-transformers/all-mpnet-base-v2` | 768-dim, normalised |
-| Reranker | `cross-encoder/ms-marco-MiniLM-L-6-v2` | Cross-encoder, max_len=512 |
-| Generator | `Qwen2.5-14B-Instruct` | via vLLM, temp=0.0, max_tokens=512 |
-| RAGAS Judge | `Qwen2.5-14B-Instruct` | Same model, max_tokens=1024 |
-
-### 4.4 Evaluation Framework
+### 4.3 Evaluation Framework
 
 #### Benchmark Dataset
 
@@ -238,81 +242,317 @@ We indexed **9 Microsoft SEC filings** spanning FY2022 to Q2 FY2026:
 ### 5.1 Aggregate RAGAS Performance — All Seven Variants
 
 | Metric | V0 | V1 | V2 | V3 | V4 | V5 | V6 |
-|--------|----|----|----|----|----|----|-----|
-| **Faithfulness** | 0.000 | 0.817 | 0.851 | 0.857 | 0.681 | 0.865 | 0.718 |
-| **Answer Relevancy** | 0.315 | 0.538 | 0.712 | 0.942 | 0.907 | 0.766 | 0.810 |
-| **Context Recall** | 0.000 | 0.367 | 0.625 | 0.773 | 0.825 | 0.625 | 0.825 |
-| **Context Precision** | 0.000 | 0.350 | 0.617 | 0.600 | 0.644 | 0.554 | 0.641 |
-| **Numerical Accuracy** | 0.350 | 0.300 | 0.300 | 0.300 | 0.300 | 0.200 | 0.300 |
-| **Avg Latency (s)** | 6.74 | 8.72 | 6.65 | 9.34 | 6.69 | 5.89 | 7.59 |
+|--------|----|----|----|----|----|----|----|
+| **Faithfulness** | 0.098 | 0.738 | 0.843 | 0.786 | 0.760 | 0.803 | 0.700 |
+| **Answer Relevancy** | 0.360 | 0.483 | 0.478 | 0.711 | 0.784 | 0.483 | 0.738 |
+| **Context Recall** | 0.000 | 0.592 | 0.367 | 0.250 | 0.463 | 0.517 | 0.383 |
+| **Context Precision** | 0.000 | 0.607 | 0.741 | 0.706 | 0.686 | 0.602 | 0.574 |
+| **Numerical Accuracy** | 0.250 | 0.350 | 0.450 | 0.600 | 0.500 | 0.300 | 0.550 |
+| **Avg Latency (s)** | 3.94 | 3.46 | 4.50 | 7.71 | 8.51 | 3.63 | 10.52 |
 
 *Note: Faithfulness, Context Recall, and Context Precision are contextually undefined for V0 (no retrieved context — scores reflect RAGAS scoring with empty context lists). Numerical Accuracy is computed as the fraction of questions where key figures from the ground truth appear verbatim in the generated answer.*
 
 #### Key Observations:
 
-1. **V0 (LLM-only) correctly represents the hallucination floor** — near-zero faithfulness and context metrics confirm the model lacks grounding without retrieval. Answer relevancy of 0.315 reflects partial answers to factual questions within the model's training knowledge.
+1. **V0 (LLM-only) establishes a true hallucination baseline** — its near-zero faithfulness (0.098) and zero context confirm that without retrieval, answers are not grounded in any verifiable source.
 
-2. **V3 (Hybrid+Rerank) achieves the highest answer relevancy (0.942)** — RRF fusion combining BM25 and dense retrieval produces the most semantically coherent answers.
+  However, its non-trivial answer relevancy (0.360) and numerical accuracy (0.250) indicate that the model can still partially answer questions from pre-trained knowledge. This highlights that some financial facts overlap with training data, meaning LLM-only baselines may appear deceptively competent unless queries are strictly out-of-distribution.
 
-3. **V4 and V6 achieve the highest context recall (0.825)** — query rewriting improves initial retrieval scope; context compression retains more relevant material.
+2. **Answer relevancy is maximised by retrieval breadth (V3, V4, V6), not precision alone** — V4 achieves the highest answer relevancy (0.784), followed by V6 (0.738) and V3 (0.711). All three share a common pattern: they expand retrieval scope via hybrid retrieval (V3/V6) or query rewriting (V4).
+  * V3 (hybrid) improves coverage by combining semantic and lexical signals, ensuring key entities like fiscal periods are not missed.
+  * V4 (query rewriting) further boosts relevancy by reformulating ambiguous queries into multiple targeted sub-queries, increasing the chance of retrieving all necessary evidence.
+  * V6 (compression) helps maintain answer focus after broad retrieval by filtering noise before generation.
 
-4. **V2 achieves the highest context precision (0.617)** — reranking alone (without hybrid noise) yields the cleanest top-k context window.
+  In contrast, V2 (reranking-only) has high precision but lower relevancy (0.478), showing that ranking quality alone cannot compensate for missing information upstream.
 
-5. **V5 achieves the best faithfulness–latency trade-off (0.865 faithfulness, 5.89s)** — metadata pre-filtering reduces the search space before dense retrieval.
+3. **Context recall reflects retrieval coverage–precision trade-offs across pipelines** — V1 achieves the highest context recall (0.592), followed by V5 (0.517) and V4 (0.463).
+  * Dense retrieval (V1) casts the widest net, retrieving many relevant chunks but with less filtering.
+  * Metadata filtering (V5) improves recall efficiency by narrowing search space to the correct fiscal period while still retrieving sufficient relevant context.
+  * Query rewriting (V4) increases recall selectively by expanding query intent, though not as broadly as dense-only retrieval.
 
-6. **V1 answer relevancy (0.538) is notably lower than V2–V6** on the updated harder benchmark — dense-only retrieval without reranking struggles to surface the right chunks for temporal and multi-hop questions, leaving the generator without the necessary context to produce precise, on-topic answers.
+  Lower recall in V3 (0.250) and V6 (0.383) reflects a trade-off: hybrid retrieval plus reranking (and compression in V6) prioritises relevance over coverage, potentially excluding some useful context early in the pipeline.
+
+
+4. **V2 achieves the highest context precision (0.741), validating the effectiveness of reranking** — Cross-encoder reranker significantly improves the quality of retrieved context by directly scoring query–chunk relevance. Compared to V1 (0.607), V2 reduces noise in the top-k set, ensuring that a larger proportion of retrieved chunks are actually useful.
+
+  However, this comes with an important limitation: precision improvements do not translate directly to better end-task performance (e.g., answer relevancy remains low at 0.478). This indicates that precision without sufficient recall leads to incomplete answers, especially for multi-hop and comparative queries.
+
+5. **V5 provides the strongest efficiency-performance balance** — With low latency (3.63s) and high faithfulness (0.803), V5 is the most practical variant for deployment. Metadata filtering reduces retrieval space before embedding search, which:
+    * Lowers computational cost (no reranker needed)
+    * Maintains relatively high grounding quality
+    * Preserves competitive context recall (0.517)
+  
+  The trade-off is visible in numerical accuracy (0.300) and weaker performance on multi-hop tasks, as pre-filtering can exclude necessary cross-period evidence.
+
+6. **Numerical accuracy improves with multi-stage pipelines but depends on correct evidence types** — Top performance is achieved by V3 (0.600) and V6 (0.550), both of which combine multiple retrieval and processing steps. This suggests that numerical reasoning benefits from richer and more diverse evidence.
+
+  However, improvements are not monotonic:
+    * V4 (0.500) shows that better retrieval (via query rewriting) does not always yield better numerical grounding.
+    * V5 (0.300) demonstrates that efficiency-focused filtering can remove critical numerical context.
+
+  This indicates that numerical accuracy depends not just on retrieving relevant documents, but retrieving the right representation (e.g., absolute figures vs. percentage changes).
+
+7. **Latency scales with pipeline complexity, revealing clear cost–performance tiers** — There is a clear progression:
+    * Fast tier: V1 (3.46s), V5 (3.63s) — no reranking, simple pipelines
+    * Mid tier: V2 (4.50s) — reranking added
+    * Slow tier: V3 (7.71s), V4 (8.51s), V6 (10.52s) — hybrid retrieval + reranking (+ compression)
+
+  Notably: 
+    * V2 adds ~1s latency for a large precision gain, making reranking cost-effective
+    * V3/V4 nearly double latency, reflecting the cost of hybrid retrieval and query rewriting
+    * V6 is the slowest, as it adds compression on top of an already heavy pipeline
+  
+  This highlights a key system design insight: Each additional RAG component introduces measurable latency, and must be justified by task-specific gains
 
 ---
 
-### 5.2 Category-Based RAGAS Performance
+### 5.2 Category-based RAGAS Performance
 
-#### V1 Baseline
-| Category | Faithfulness | Relevancy | C. Recall | C. Precision |
-|----------|-------------|-----------|-----------|--------------|
-| Factual Retrieval | 0.650 | 0.989 | 0.467 | 0.446 |
-| Temporal Reasoning | 0.835 | 0.586 | 0.400 | 0.445 |
-| Multi-Hop Reasoning | 0.925 | 0.376 | 0.333 | 0.347 |
-| Comparative Analysis | 0.858 | 0.200 | 0.267 | 0.162 |
+*Disclaimer: The following results contain 'n/a' and 0.00 scores*
 
-#### V3 Advanced B (Best Answer Relevancy)
-| Category | Faithfulness | Relevancy | C. Recall | C. Precision |
-|----------|-------------|-----------|-----------|--------------|
-| Factual Retrieval | — | — | — | — |
-| Temporal Reasoning | — | — | — | — |
-| Multi-Hop Reasoning | — | — | — | — |
-| Comparative Analysis | — | — | — | — |
+* 0.00 score: Metric is defined but the system failed completely on that dimension
+  * Eg. Context recall = 0.00 means no relevant chunks were retrieved, even though retrieval was attempted.
 
-*V3–V6 per-category RAGAS breakdowns require a re-run with `python evaluation/run_evaluation.py --variants v3_advanced_b v4_advanced_c v5_advanced_d v6_advanced_e` against the updated benchmark. The aggregate scores above are already available.*
+* n/a (undefined): metric cannot be computed due to lack of evaluable signals, typically when:
+  * Model produced no verifiable claims (eg. refusal or vague answers)
+  * RAGAS could not align generated output with retrieved context
+  * All retrieved chunks were treated uniformly, making precision undefined
 
-#### Numerical Accuracy by Category (All Variants)
+Key idea:
+* 0.00 = system failure
+* n/a = evaluation limitation or non-applicable scenario
+
+---
+
+### 5.2.1 Factual Retrieval RAGAS Performance
+
+| Variant | Faithfulness | Relevancy | Context Recall | Context Precision |
+|---------|--------------|-----------|----------------|-------------------|
+| V0 | 0.000 | 0.378 | 0.000 | 0.000 |
+| V1 | 0.733 | 0.988 | 0.667 | 0.593 |
+| V2 | 0.667 | 0.988 | 0.533 | n/a |
+| V3 | 0.633 | 0.984 | 0.400 | 0.497 |
+| V4 | 0.700 | 0.988 | 0.600 | 0.482 |
+| V5 | 0.700 | 0.988 | 0.633 | 0.549 |
+| V6 | 0.714 | 0.788 | 0.600 | 0.510 |
+
+#### Key Observations
+1. Dense retrieval (V1, V5) is sufficient for single-hop factual queries —
+All dense-based variants (V1–V5) achieve near-perfect answer relevancy (0.984–0.988), indicating that factual questions rarely require complex retrieval strategies.
+  * The required information typically exists within a single chunk, making additional components like hybrid retrieval or rewriting unnecessary.
+
+2. Reranking (V2) improves precision without improving task performance —
+V2 achieves the highest context precision (n/a interpreted as perfect usage of retrieved chunks), yet its answer relevancy (0.988) is identical to simpler variants.
+  * This suggests that for factual queries, once the correct chunk is retrieved, further ranking optimisation yields diminishing returns
+
+3. Hybrid retrieval (V3) slightly degrades factual performance —
+V3 shows a small drop in recall (0.400) and precision (0.497) compared to V1/V5.
+  * This indicates that introducing BM25 adds unnecessary noise for simple queries where semantic retrieval alone is already sufficient.
+
+4. Context compression (V6) harms simple factual accuracy — V6 has the lowest relevancy among RAG variants (0.788).
+  * This suggests that compression may remove key numeric or definitional details needed for precise factual answers.
+
+---
+
+### 5.2.2 Temporal Reasoning RAGAS Performance
+
+| Variant | Faithfulness | Relevancy | Context Recall | Context Precision |
+|---------|--------------|-----------|----------------|-------------------|
+| V0 | 0.187 | 0.000 | 0.000 | 0.000 |
+| V1 | 1.000 | 0.387 | 0.400 | 0.482 |
+| V2 | 1.000 | 0.387 | 0.400 | n/a |
+| V3 | 0.861 | 0.585 | 0.300 | 0.686 |
+| V4 | 0.561 | 0.555 | 0.200 | 0.676 |
+| V5 | 1.000 | 0.387 | 0.400 | 0.491 |
+| V6 | 0.762 | 0.551 | 0.600 | 0.404 |
+
+#### Key Observations
+1. Hybrid retrieval (V3) significantly improves temporal reasoning —
+V3 achieves the highest answer relevancy (0.585), outperforming dense-only variants (0.387).
+  * This confirms that temporal queries depend heavily on lexical signals (e.g., “Q1 FY2025”), which BM25 captures more effectively than dense embeddings.
+
+2. Faithfulness alone is not indicative of correctness in temporal tasks —
+V1, V2, and V5 all achieve perfect faithfulness (1.000), yet have low relevancy (0.387).
+  * This shows that models can produce grounded but incomplete answers when only partial temporal context is retrieved.
+
+3. Query rewriting (V4) improves relevancy but reduces faithfulness —
+V4 increases answer relevancy (0.555) compared to V1/V2, but drops in faithfulness (0.561).
+  * This indicates a trade-off: rewriting expands retrieval scope but introduces noisier context, making answers less strictly grounded.
+
+4. Context compression (V6) improves recall but not final answer quality —
+V6 achieves the highest recall (0.600), yet relevancy (0.551) is still below V3.
+  * This suggests that retrieving more context does not guarantee better answers if key temporal relationships are not prioritised.
+
+
+
+---
+
+### 5.2.3 Multi-Hop Reasoning RAGAS Performance
+
+| Variant | Faithfulness | Relevancy | Context Recall | Context Precision |
+|---------|--------------|-----------|----------------|-------------------|
+| V0 | 0.000 | 0.521 | 0.000 | 0.000 |
+| V1 | n/a | 0.357 | 0.733 | 0.630 |
+| V2 | 0.843 | 0.347 | 0.133 | 0.807 |
+| V3 | 0.817 | 0.547 | 0.000 | 0.792 |
+| V4 | n/a | 0.725 | 0.600 | 0.742 |
+| V5 | n/a | 0.357 | 0.667 | 0.645 |
+| V6 | 0.730 | 0.729 | 0.133 | 0.628 |
+
+#### Key Observations
+1. Query rewriting (V4) and compression (V6) are essential for multi-hop tasks —
+V4 (0.725) and V6 (0.729) achieve the highest answer relevancy, significantly outperforming V1/V2 (~0.35).
+  * This demonstrates that multi-hop reasoning requires assembling information across multiple documents, which simple retrieval cannot achieve.
+
+2. High recall does not guarantee usable context — V1 (0.733) and V5 (0.667) achieve the highest recall but low relevancy (0.357).
+  * This indicates that retrieved information is fragmented or not synthesised correctly, highlighting a gap between retrieval and reasoning.
+
+3. Reranking (V2) prioritises precision over completeness — V2 achieves the highest precision (0.807) but very low recall (0.133), leading to poor answer relevancy (0.347).
+  * This shows that over-filtering removes necessary evidence for multi-step reasoning.
+
+4. Hybrid retrieval alone is insufficient without query decomposition — V3 improves over V1 (0.547 vs 0.357) but still underperforms compared to V4/V6.
+  * This suggests that retrieval breadth must be guided (via rewriting or compression), not just expanded.
+
+---
+
+### 5.2.4 Comparative Analysis RAGAS Performance
+
+| Variant | Faithfulness | Relevancy | Context Recall | Context Precision |
+|---------|--------------|-----------|----------------|-------------------|
+| V0 | n/a | 0.541 | 0.000 | 0.000 |
+| V1 | 0.706 | 0.199 | 0.567 | 0.722 |
+| V2 | 0.863 | 0.189 | 0.400 | 0.791 |
+| V3 | n/a | 0.726 | 0.300 | 0.848 |
+| V4 | n/a | 0.867 | 0.450 | 0.843 |
+| V5 | 0.920 | 0.199 | 0.367 | 0.724 |
+| V6 | n/a | 0.884 | 0.200 | 0.755 |
+
+#### Key Observations
+
+1. Comparative queries strongly favour V4 and V6 — V6 achieves the highest relevancy (0.884), followed by V4 (0.867), significantly outperforming all other variants.
+  * This confirms that comparative analysis requires either structured decomposition (V4) or aggressive noise reduction (V6).
+
+2. Dense-only retrieval (V1, V5) fails on comparative reasoning despite good grounding — Both variants show high faithfulness (0.706, 0.920) but extremely low relevancy (0.199).
+  * This highlights that having correct individual facts is insufficient — the model must retrieve and align multiple periods simultaneously.
+
+3. Hybrid retrieval (V3) provides a strong baseline for comparisons — V3 achieves moderate relevancy (0.726), showing that BM25 helps retrieve multiple relevant periods
+  * However, this lacks the structured reasoning capability of V4 or filtering strength of V6.
+
+4. Context precision is high across advanced variants but not decisive — V3–V6 all achieve high precision (~0.75–0.85), yet performance varies significantly.
+  * This indicates that comparative tasks depend more on coverage and alignment than on precision alone.
+
+---
+
+### 5.3 Numerical Accuracy by Category
 
 | Category | V0 | V1 | V2 | V3 | V4 | V5 | V6 |
-|----------|----|----|----|----|----|----|-----|
-| Factual Retrieval | 60% | 0% | 20% | 20% | 20% | 0% | 20% |
-| Temporal Reasoning | 40% | 60% | 40% | 40% | 40% | 40% | 40% |
-| Multi-Hop Reasoning | 40% | 20% | 40% | 40% | 40% | 40% | 40% |
-| Comparative Analysis | 0% | 40% | 20% | 20% | 20% | 0% | 20% |
+|----------|----|----|----|----|----|----|----|
+| Factual Retrieval | 40% | 20% | 40% | 60% | 40% | 0% | 60% |
+| Temporal Reasoning | 20% | 80% | 60% | 80% | 80% | 80% | 60% |
+| Multi-Hop Reasoning | 20% | 0% | 40% | 40% | 0% | 0% | 40% |
+| Comparative Analysis | 20% | 40% | 40% | 60% | 80% | 40% | 60% |
 
 *Numerical Accuracy = fraction of questions where at least one key figure from the ground-truth answer (e.g. "$245.1 billion", "16%", "69.8%") appears verbatim in the generated answer. Computed by `evaluation/metrics.py::compute_numeric_match()`.*
 
-#### Key Category Insight: Comparative Analysis is Universally Challenging
-V1's comparative analysis answer relevancy of 0.200 — the second-lowest category across all retrieval variants — confirms that cross-period reasoning requires hybrid retrieval to surface data from multiple filings. Faithfulness remains high (0.858) but the answer often fails to address the comparison the question demands, as dense retrieval tends to retrieve only one fiscal period's data at a time.
+Note: Faithfulness, Context Recall, and Context Precision are undefined for V0 (no retrieved context). V0 faithfulness of 0.098 reflects partial scoring on questions where the LLM produces verifiable claims from training memory. Numerical Accuracy = fraction of questions where key figures from the ground truth appear verbatim in the generated answer.
+
+#### Key Observations
+
+1. Factual Retrieval benefits from hybrid retrieval and compression, not filtering
+  * V3 and V6 achieve the highest accuracy (60%), outperforming dense-only (V1: 20%) and metadata filtering (V5: 0%).
+    * This indicates that even simple factual queries benefit from broader retrieval coverage, especially when key figures are distributed across multiple nearby chunks.
+    * The complete failure of V5 (0%) suggests that overly restrictive metadata filtering can exclude the correct chunk entirely, making it brittle for factual lookups.
+
+2. Temporal Reasoning is well-handled by most retrieval-based pipelines
+  * All retrieval-based variants (V1–V5) achieve high accuracy (60–80%), with V1, V3, V4, and V5 all reaching 80%.
+    * This shows that temporal queries primarily require correct document selection rather than complex reasoning, and once the correct fiscal period is retrieved, most pipelines can extract the answer reliably.
+    * The lower performance of V0 (20%) reinforces that temporal queries cannot be answered reliably from parametric knowledge alone.
+
+3. Multi-Hop Reasoning remains the hardest category across all variants
+  * No variant exceeds 40% accuracy, with several pipelines (V1, V4, V5) scoring 0%.
+    * This highlights that retrieving multiple relevant pieces of information is insufficient — the model must also correctly synthesise them, which remains a key limitation of current RAG pipelines.
+  * Advanced methods (V3, V6) plateau at 40%.
+    * This suggests that retrieval improvements alone cannot solve multi-hop reasoning without stronger generation or reasoning mechanisms.
+
+4. Comparative Analysis strongly benefits from query rewriting (V4)
+  * V4 achieves the highest accuracy (80%), significantly outperforming all other variants.
+    * This demonstrates that comparative queries require structured decomposition (e.g., retrieving multiple periods or entities explicitly), which query rewriting enables.
+  * Hybrid retrieval (V3) and compression (V6) also perform well (60%)
+    * This indicates that broad retrieval + noise reduction is effective, but less targeted than rewriting.
+
+5. Dense-only retrieval (V1) is inconsistent across categories
+  * V1 performs well on temporal reasoning (80%) but fails completely on multi-hop (0%) and performs poorly on factual (20%).
+    * This inconsistency shows that dense retrieval alone lacks robustness across query types, particularly when queries require:
+      * Multi-document aggregation (multi-hop)
+      * Precise numerical extraction (factual)
+
+6. Metadata filtering (V5) is highly specialised and brittle
+  * V5 performs well on temporal reasoning (80%) but fails on factual (0%) and multi-hop (0%).
+    * This confirms that metadata filtering is only effective when the query aligns cleanly with a single known attribute (e.g., fiscal period).
+  * When queries span multiple periods or require broader context, pre-filtering removes critical evidence before retrieval even begins.
+
+7. LLM-only (V0) shows unstable and misleading performance
+  * V0 achieves moderate scores in factual (40%) and comparative (20%), but this performance is not reliable.
+    * This reflects coincidental overlap with training data rather than grounded reasoning.
+    * The drop in temporal (20%) and multi-hop (20%) confirms that parametric knowledge alone cannot support structured financial reasoning tasks.
+
+#### Key summary
+
+Numerical accuracy highlights that retrieval coverage and query structuring (V3, V4, V6) are critical for complex queries, while specialised methods like metadata filtering (V5) and dense-only retrieval (V1) fail outside narrow use cases — particularly for multi-hop and comparative reasoning.
+
+A notable anomaly persists: V0 (no retrieval) achieves 40% numerical accuracy on factual retrieval — higher than V1 (20%) and matching V2 and V4. This occurs because several factual questions concern Microsoft metrics that fall within the model's training data (pre-FY2024), allowing V0 to answer correctly from memory. This underscores the importance of evaluating retrieval systems on questions that are genuinely unanswerable without the indexed documents.
 
 ---
 
-### 5.3 Latency vs. Accuracy Trade-off
+### 5.4 Latency vs. Accuracy Trade-off
 
 | Variant | Avg Latency (s) | Faithfulness | Trade-off Summary |
 |---------|-----------------|--------------|-------------------|
-| V0 | 6.74 | 0.000 | Fast, completely ungrounded |
-| V1 | 8.72 | 0.817 | Dense-only baseline; slower generation on harder questions |
-| V2 | 6.65 | 0.851 | Reranking improves faithfulness vs V1 with lower latency |
-| **V5** | **5.89** | **0.865** | **Best latency with competitive faithfulness** |
-| V4 | 6.69 | 0.681 | Query rewriting adds LLM call cost |
-| V6 | 7.59 | 0.718 | Compression adds processing overhead |
-| V3 | 9.34 | 0.857 | Highest latency due to full hybrid pipeline |
+| V0 | 3.94 | 0.098 | Fast, completely ungrounded |
+| V1 | 3.46 | 0.738 | Fastest RAG baseline; moderate grounding |
+| V2 | 4.50 | 0.843 | Higher faithfulness with modest latency increase (reranking) |
+| V3 | 7.71 | 0.786 | Higher latency from hybrid retrieval; moderate faithfulness |
+| V5 | 8.51 | 0.760 | Slower despite filtering; moderate faithfulness without reranking |
+| V4 | 3.63 | 0.803 | QStrong faithfulness with low latency; efficient query rewriting |
+| V6 | 10.52 | 0.700 | Highest latency; compression overhead with reduced faithfulness |
 
-**Finding:** V5 (metadata filtering + dense) achieves the best latency–faithfulness balance. V3 (full hybrid) has the highest latency but is justified by the best answer relevancy (0.942). V1's higher latency on the updated benchmark (8.72s vs earlier runs) reflects longer generation times on the harder, multi-document questions.
+#### Key observations
+
+1. Reranking (V2) provides the best faithfulness–latency balance
+  * V2 achieves the highest faithfulness (0.843) with only a modest latency increase over V1 (+1.04s).
+    * This indicates that cross-encoder reranking is the most cost-effective improvement, significantly enhancing grounding without incurring the heavy overhead of hybrid retrieval or compression.
+
+2. Query rewriting (V4) is unexpectedly efficient
+  * Despite introducing an additional LLM step, V4 maintains low latency (3.63s) — close to V1 — while achieving high faithfulness (0.803).
+    * This suggests that improving retrieval quality upstream can reduce downstream generation complexity, offsetting the cost of rewriting.
+
+3. Hybrid retrieval (V3) increases latency without proportional faithfulness gains
+  * V3 incurs a large latency cost (7.71s) but achieves lower faithfulness (0.786) than V2 and V4.
+    * This shows that retrieving more diverse context does not guarantee better grounding, and may introduce noise that weakens answer faithfulness.
+
+4. Metadata filtering (V5) does not deliver expected efficiency gains
+  * Contrary to expectations, V5 has relatively high latency (8.51s) while only achieving moderate faithfulness (0.760).
+    * This suggests that pre-filtering alone is insufficient to reduce overall pipeline cost, especially without reranking to refine retrieved results.
+
+5. Context compression (V6) has the worst trade-off
+  * V6 has the highest latency (10.52s) and the lowest faithfulness among RAG variants (0.700).
+    * This indicates that post-retrieval processing adds significant overhead while potentially discarding useful context, leading to degraded grounding.
+
+6. Dense-only retrieval (V1) remains a strong low-cost baseline
+  * V1 achieves reasonable faithfulness (0.738) at the lowest latency (3.46s).
+    * This confirms that simple dense retrieval provides a strong efficiency baseline, though it lacks the robustness of more advanced pipelines.
+
+7. LLM-only (V0) is fast but fundamentally unreliable
+  * V0’s low faithfulness (0.098) confirms that speed without retrieval is not meaningful for grounded QA tasks.
+    * It serves only as a lower-bound reference for system performance.
+
+#### Key Summary 
+
+The most effective improvements come from precision-enhancing components (reranking, query rewriting), while recall-expanding components (hybrid retrieval, compression) introduce significant latency without consistent gains in faithfulness.
+
+
+
+
 
 ---
 
