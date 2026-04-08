@@ -469,8 +469,8 @@ def main():
     parser = argparse.ArgumentParser(description="FinSight category-based analysis")
     parser.add_argument(
         "--results",
-        default="evaluation/results/eval_results.json",
-        help="Path to eval_results.json produced by run_evaluation.py",
+        default="evaluation/results/eval_results_category_analysis.json",
+        help="Path to eval_results_category_analysis.json produced by run_evaluation.py",
     )
     parser.add_argument(
         "--output",

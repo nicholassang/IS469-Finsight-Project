@@ -509,8 +509,8 @@ A notable anomaly persists: V0 (no retrieval) achieves 40% numerical accuracy on
 | V1 | 3.46 | 0.738 | Fastest RAG baseline; moderate grounding |
 | V2 | 4.50 | 0.843 | Higher faithfulness with modest latency increase (reranking) |
 | V3 | 7.71 | 0.786 | Higher latency from hybrid retrieval; moderate faithfulness |
-| V5 | 8.51 | 0.760 | Slower despite filtering; moderate faithfulness without reranking |
-| V4 | 3.63 | 0.803 | QStrong faithfulness with low latency; efficient query rewriting |
+| V4 | 8.51 | 0.760 | Slower despite filtering; moderate faithfulness without reranking |
+| V5 | 3.63 | 0.803 | QStrong faithfulness with low latency; efficient query rewriting |
 | V6 | 10.52 | 0.700 | Highest latency; compression overhead with reduced faithfulness |
 
 #### Key observations
@@ -743,16 +743,19 @@ V6 applies sentence-level extraction after reranking to distil financially relev
 
 ---
 
-### 7.3 Trade-off Summary
+### 7.3 Query Type Conclusion Summary
 
-| Component | Primary Benefit | Best Query Type | Latency | Cost |
-|-----------|-----------------|-----------------|---------|------|
-| Dense Retrieval (V1) | Grounding; faithfulness 0.803 | Factual | 3.19s | Baseline |
-| + Reranking (V2) | Faithfulness → 0.884; precision → 0.735 | Multi-Hop | 5.27s | +2.1s |
-| + Hybrid Retrieval (V3) | Relevancy → 0.754; comparative acc. → 0.892 | Temporal, Comparative | 10.94s | +7.8s; BM25 index required |
-| + Query Rewriting (V4) | Recall → 0.579 (highest); comp. num. acc. → 80% | Ambiguous, Multi-Hop | 10.06s | Extra LLM call per query |
-| + Metadata Filtering (V5) | Latency → 3.25s; precision maintained | Temporal, Factual | 3.25s | Requires metadata at ingest |
-| + Context Compression (V6) | Num. accuracy → 55%; noise reduction | Multi-Hop, Long-context | 10.51s | +0.5s over V3 |
+| Variant | Primary Benefit (Query-Type Specific) | Best Query Type | Justification (Based on Pipeline) |
+|---------|--------------------------------------|-----------------|-----------------------------------|
+| V0 | Baseline for simple factual recall without grounding | Factual (limited) | No retrieval → relies on parametric knowledge; can partially answer common factual queries but fails on structured or time-specific questions |
+| V1 | Reliable single-document grounding for direct lookups | Factual | Dense retrieval surfaces semantically relevant chunks, which is sufficient for single-hop factual queries located within one document |
+| V2 | High-precision evidence selection for multi-hop reasoning | Multi-Hop | Reranker filters top-k chunks to the most relevant ones, reducing noise and ensuring only high-quality evidence is used for combining multiple facts |
+| V3 | Strong cross-period retrieval for temporal and comparative queries | Temporal, Comparative | BM25 captures exact fiscal terms (e.g., “Q1 FY2025”) while dense retrieval captures semantics; RRF fusion ensures both periods are retrieved together |
+| V4 | Structured retrieval for ambiguous and multi-document queries | Ambiguous, Multi-Hop | Query rewriting decomposes or expands queries into clearer sub-queries, enabling retrieval of multiple relevant documents for synthesis |
+| V5 | Fast and precise retrieval for single-period temporal queries | Temporal, Factual | Metadata filtering restricts search to a specific fiscal period, improving precision and speed when the query targets a known timeframe |
+| V6 | Noise-reduced context for complex multi-hop and comparative reasoning | Multi-Hop, Comparative | Compression removes irrelevant text after retrieval, helping the model focus on key facts needed to synthesise answers across multiple sources |
+
+Each variant’s benefit is most pronounced when its pipeline modification directly addresses the dominant challenge of the query type — whether it is locating the correct document (V3, V5), structuring the query (V4), selecting precise evidence (V2), or filtering noise during synthesis (V6).
 
 ---
 
@@ -781,8 +784,6 @@ V6 applies sentence-level extraction after reranking to distil financially relev
 
 5. **Fine-tuned Embeddings:** Fine-tune the embedding model on financial terminology to improve discrimination between fiscal periods and segment names
 
-6. **Larger Context Models:** Migrate to 32K+ context window models to handle long multi-period context windows without truncation
-
 6. **Retrieval-level metrcs:** Implement chunk-level annotation to measure metrics like MRR and top-k hit rate
 
 ---
@@ -793,7 +794,7 @@ V6 applies sentence-level extraction after reranking to distil financially relev
 
 | Risk | Description | Severity |
 |------|-------------|----------|
-| **Hallucination** | LLM generates plausible-sounding but incorrect financial figures not present in retrieved context | Critical |
+| **Hallucination** | LLM generates plausible-sounding but incorrect financial figures not found in retrieved context | Critical |
 | **Stale data** | System answers questions using outdated filings when newer filings have been published | High |
 | **Retrieval miss** | Relevant chunks not retrieved, causing the LLM to answer from parametric memory | High |
 | **Numerical precision errors** | LLM rounds or paraphrases figures (e.g., "$245 billion" instead of "$245.1 billion") | Medium |
@@ -802,19 +803,22 @@ V6 applies sentence-level extraction after reranking to distil financially relev
 
 ### 9.2 Implemented Mitigations
 
-**Guardrail 1 — Weak evidence threshold (implemented in `src/generation/answer_verifier.py`)**
-The generator checks whether retrieved context chunks pass a minimum reranker confidence threshold (configurable via `retrieval.weak_evidence_threshold = -3.0` in `settings.yaml`). If all retrieved chunks fall below this threshold, the system returns: *"The provided documents do not contain sufficient information to answer this question."* This prevents hallucination when retrieval fails entirely.
+1. Weak evidence threshold (implemented in `src/generation/answer_verifier.py`)
+* The generator checks whether retrieved context chunks pass a minimum reranker confidence threshold (configurable via `retrieval.weak_evidence_threshold = -3.0` in `settings.yaml`). 
+  * If all retrieved chunks fall below this threshold, the system returns: *"The provided documents do not contain sufficient information to answer this question."* This prevents hallucination when retrieval fails entirely.
 
-Evidence from eval: V1 correctly refuses on q016 (multi-document comparative) rather than generating an unsupported answer. The trade-off is false refusals when relevant chunks exist but rank poorly — visible in the V1 temporal failure on q006.
+* Evidence from eval: V1 correctly refuses on q016 (multi-document comparative) rather than generating an unsupported answer. The trade-off is false refusals when relevant chunks exist but rank poorly — visible in the V1 temporal failure on q006.
 
-**Guardrail 2 — Citation enforcement (implemented in `src/generation/citation_formatter.py`)**
-Every answer appends `[Doc-N]` citations linking claims back to source chunks. This makes unsupported claims visible to the user and allows manual verification against the original SEC filing.
+2. Citation enforcement (implemented in `src/generation/citation_formatter.py`)
+* Every answer appends `[Doc-N]` citations linking claims back to source chunks. 
+  * This makes unsupported claims visible to the user and allows manual verification against the original SEC filing.
 
-**Guardrail 3 — Scope filtering (implemented in `src/retrieval/query_processor.py`)**
-Queries that do not match known Microsoft fiscal period patterns or document metadata are flagged as potentially out-of-scope before retrieval. Users receive a warning when the query may not be answerable from the indexed filings.
+3. Scope filtering (implemented in `src/retrieval/query_processor.py`)
+* Queries that do not match known Microsoft fiscal period patterns or document metadata are flagged as potentially out-of-scope before retrieval. Users receive a warning when the query may not be answerable from the indexed filings.
 
-**Guardrail 4 — Temperature = 0 (configured in `config/settings.yaml`)**
-The generator runs at temperature 0.0 to minimise stochastic variation in numerical outputs. This is especially important for financial figures where rounding behaviour at higher temperatures introduces numerical inconsistency.
+4. Temperature = 0 (configured in `config/settings.yaml`)
+* The generator runs at temperature 0.0 to minimise stochastic variation in numerical outputs. 
+  * This is especially important for financial figures where rounding behaviour at higher temperatures introduces numerical inconsistency.
 
 ### 9.3 Residual Risks and Mitigations Not Yet Implemented
 
@@ -829,33 +833,27 @@ The generator runs at temperature 0.0 to minimise stochastic variation in numeri
 
 ## 10. Conclusion
 
+### Study Hypothesis
 
 This project demonstrates that **RAG components provide selective, query-type-dependent benefits** — confirming the study hypothesis that no single pipeline is universally optimal.
 
-### Key Results:
+### Overall Results
 
 | Finding | Evidence |
-|---------|---------|
-| RAG vs. no RAG: critical for grounding | V0 faithfulness = 0.126 → V1 faithfulness = 0.803 |
-| Hybrid retrieval best for answer relevancy | V3 achieves 0.754 vs V1's 0.480 (+57%) |
-| Metadata filtering most latency-efficient | V5 at 3.25s, fastest RAG variant, faithfulness = 0.829 |
-| Query rewriting achieves best context recall | V4 achieves 0.579, highest of all variants |
-| Comparative analysis is the hardest category | V1 comparative relevancy = 0.199 — requires hybrid (V3: 0.892) |
+|---------|----------|
+| RAG vs. no RAG: critical for grounding | V0 faithfulness = 0.098 → V1 faithfulness = 0.738 |
+| Hybrid retrieval best for answer relevancy | V3 achieves 0.711 vs V1's 0.483 (+47%) |
+| V6 achieves best numerical accuracy | V6 = 0.550, strongest on comparative (0.884 relevancy) |
+| Metadata filtering most latency-efficient | V5 at 3.63s, fastest RAG variant, faithfulness = 0.803 |
+| Comparative analysis is the hardest category| V1 comparative relevancy = 0.199 — requires V4 (0.867) or V6 (0.884) |
 
-### Key Insights:
+### Recommendations for Financial RAG Systems
 
-1. **Hybrid retrieval (V3) is essential for temporal and comparative financial queries** — V3 achieves 0.892 comparative relevancy vs V1's 0.199; BM25 lexical anchoring on fiscal period strings is non-negotiable for this query type
-2. **Reranking (V2) delivers the highest faithfulness (0.884) and context precision (0.735)** — best choice when answer groundedness matters more than relevancy breadth
-3. **Metadata filtering (V5) is uniquely efficient at 3.25s** — matches V1 latency while improving precision; fails on multi-hop queries spanning multiple fiscal periods
-4. **Query rewriting (V4) is the best choice for multi-document synthesis** — highest recall (0.579) and 80% comparative numerical accuracy
-5. **No single variant wins across all categories** — adaptive pipeline selection based on query type is the recommended direction for production systems
-
-### Recommendations for Financial RAG Systems:
-- Always use hybrid retrieval (dense + BM25) for queries with fiscal period specificity
-- Apply cross-encoder reranking for multi-hop and complex analytical queries
-- Implement metadata pre-filtering as a low-cost precision improvement for temporal queries
-- Use context compression for long-context multi-document synthesis tasks
-- Maintain a separate LLM-only baseline to quantify the value added by each retrieval component
+1. Always use hybrid retrieval (dense + BM25) for queries with fiscal period specificity.
+2. Apply cross-encoder reranking for highest context precision (V2, 0.741).
+3. Implement metadata pre-filtering as a low-latency precision improvement for temporal (time-sensitive) queries.
+4. Use query rewriting (V4) or context compression (V6) for comparative and multi-hop questions.
+5. Maintain an LLM-only baseline to quantify the value added by each retrieval component, and ensure benchmark questions are genuinely unanswerable from model training data alone.
 
 FinSight demonstrates that thoughtful, component-level RAG design — combined with query-type-aware evaluation — produces both better systems and clearer research insights than aggregate benchmarking alone.
 
