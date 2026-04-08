@@ -660,7 +660,7 @@ All answers below are taken verbatim from `evaluation/results/eval_results.json`
 
 ---
 
-#### Case 4: Multi-Document Retrieval Failure — V1 vs V4 (q016)
+#### Case 4: Comparative Analysis Remained Brittle — V1 vs V3 vs V4 (q016)
 
 **Question:** "How did the cumulative revenue growth of Microsoft's three business segments compare over the FY2022 to FY2024 period?"
 
@@ -669,26 +669,35 @@ All answers below are taken verbatim from `evaluation/results/eval_results.json`
 **V1 (Baseline) actual answer:**
 > "The provided context only contains data for FY2022 and does not include any information for FY2023 or FY2024. Therefore, I cannot provide a comparison of cumulative revenue growth … The provided documents do not contain sufficient information to answer this question."
 
+**V3 (Hybrid) actual answer:**
+> "FY2022 showed a higher growth rate of 18% compared to FY2024's growth rate of 12%. This indicates that while all segments continued to grow, the rate of growth slowed from FY2022 to FY2024."
+
 **V4 (Query Rewriting) actual answer:**
-> "FY2022 Revenue — Productivity and Business Processes: $63,364M; Intelligent Cloud: $74,965M; More Personal Computing: $59,941M [Doc-7]. FY2023 Revenue — Productivity and Business Processes: $69,274M [Doc-7] …" *(continues with FY2024 segment figures and calculates per-segment cumulative growth)*
+> "FY2022 Revenue: Productivity and Business Processes $69,274M, Intelligent Cloud $87,907M, More Personal Computing $54,734M … FY2024 Revenue: Productivity and Business Processes $85,000M, Intelligent Cloud $137.4B, More Personal Computing $57,000M … cumulative growth 31.8%."
 
-**Assessment:** V1 anchors on FY2022 and retrieves only that year's filings. The comparative question requires evidence from both endpoints (FY2022 and FY2024) simultaneously. V4's query rewriter decomposes the question into sub-queries per fiscal year and per segment, pulling both years' data into context. This is the strongest evidence for query rewriting's value on comparative analysis questions.
+**Assessment:** This question is harder than simple multi-document retrieval because it requires the system to align the same segment table across two fiscal endpoints and then compute per-segment cumulative growth. V1 fails first at retrieval coverage, surfacing only one endpoint and therefore refusing. V3 retrieves more evidence but answers the wrong question: it compares overall company growth rates in FY2022 and FY2024 instead of segment-level cumulative growth from FY2022 to FY2024. V4 is worse in a different way: it produces a confident structured answer, but mixes incompatible figures, treats Microsoft Cloud totals as if they were segment revenue, and invents intermediate values such as "$85,000M" and "$57,000M." In other words, more aggressive retrieval expansion did not solve the task; it increased the opportunity for structured hallucination once evidence alignment broke down.
 
-**Failure type:** Retrieval failure (multi-document, multi-period) in V1. Fixed by query rewriting in V4.
+**Failure type:** V1 shows a retrieval failure; V3 shows query-understanding failure; V4 shows generation failure on top of noisy multi-document evidence. This case explains why comparative analysis remained the weakest category even after adding hybrid retrieval and query rewriting.
 
 ---
 
 ### 6.4 Error Distribution
 
-```
-Failure Distribution Across V1–V6 (qualitative estimate, 20 questions)
+Using the automatic classifier in [evaluation/category_analysis.py](evaluation/category_analysis.py), the saved analysis assigns **30 total failures across V1–V6**. The distribution is more concentrated than the earlier qualitative estimate suggested:
 
-Retrieval Failure:          ████████████ ~30% of errors
-Ranking Failure:            ████████     ~20% of errors
-Query Understanding:        ██████████   ~25% of errors
-Chunking Failure:           ██████       ~15% of errors
-Generation Failure:         ████         ~10% of errors
-```
+| Failure Type | Count | Share of Classified Failures | Main Concentration |
+|--------------|-------|------------------------------|--------------------|
+| **Retrieval Failure** | 18 | 60.0% | Temporal reasoning (8), comparative analysis (5), multi-hop reasoning (4) |
+| **Query Understanding Failure** | 10 | 33.3% | Multi-hop reasoning (6), comparative analysis (4) |
+| **Generation Failure** | 2 | 6.7% | Multi-hop reasoning only |
+| **Ranking Failure** | 0 | 0.0% | Not surfaced separately by the current heuristic |
+| **Chunking Failure** | 0 | 0.0% | Not surfaced separately by the current heuristic |
+
+Two patterns stand out. First, **retrieval failure is the dominant bottleneck**, accounting for three-fifths of all classified errors. This is especially visible in temporal questions, where systems often retrieved only one fiscal period and then refused rather than hallucinating, as in q006. Second, **query-understanding failure is concentrated in multi-hop and comparative questions**, where the model must interpret an underspecified request, align multiple years or segments, and retrieve the right evidence for each sub-part of the comparison.
+
+The near-zero counts for ranking and chunking should not be interpreted as proof that those problems never occurred. Rather, the current rule-based classifier in [evaluation/category_analysis.py](evaluation/category_analysis.py) tended to absorb those cases into retrieval or generation failure unless there was a very clear observable signal. In other words, the automatic counts are most reliable for identifying the dominant failure families, not for perfectly separating every low-level cause.
+
+At the variant level, the weakest pipelines were **V2** and **V5** for retrieval-related misses, while **V1** and **V5** accounted for most query-understanding failures. By contrast, **V3**, **V4**, and **V6** reduced query-understanding failures substantially, but they did not eliminate retrieval misses entirely. This matches the case studies above: better retrieval breadth helps, but complex comparative questions still fail when evidence must be aligned and reasoned over consistently.
 
 ---
 
