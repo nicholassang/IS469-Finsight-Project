@@ -232,6 +232,7 @@ We indexed **9 Microsoft SEC filings** spanning FY2022 to Q2 FY2026:
 | **Context Recall** | RAGAS | Did retrieval surface the relevant information? |
 | **Context Precision** | RAGAS | What fraction of retrieved context was actually useful? |
 | **Numerical Accuracy** | Custom | Does the answer contain the key numbers from the ground truth? |
+| **Latency** | Custom | What is the cost of my query? |
 
 ---
 
